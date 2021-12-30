@@ -10,7 +10,12 @@ class Game
 
     readonly Texture _sprite = Engine.LoadTexture("player.png");
     int spriteX = 320;
-    int spriteY = 240;
+    int spriteY = 280;
+
+    readonly Texture _block = Engine.LoadTexture("square.png");
+
+    List<int> blocksX = new List<int>();
+    List<int> blocksY = new List<int>();
 
     public Game()
     {
@@ -21,23 +26,62 @@ class Game
     {
         Engine.DrawTexture(_background, Vector2.Zero);
 
+        for (int i = 0; i < blocksX.Count; i++)
+        {
+            Vector2 vec = new Vector2(blocksX[i], blocksY[i]);
+            Engine.DrawTexture(_block, vec, null, new Vector2(20, 20));
+        }
+
+        addLayer();
+
         Engine.DrawTexture(_sprite, new Vector2(spriteX, spriteY), null, new Vector2(25, 30));
 
-        if (Engine.GetKeyDown(Key.Left))
+        if (Engine.GetKeyDown(Key.Left, true))
         {
             spriteX -= 10;
         }
-        else if (Engine.GetKeyDown(Key.Right))
+        else if (Engine.GetKeyDown(Key.Right, true))
         {
             spriteX += 10;
         }
-        else if (Engine.GetKeyDown(Key.Up))
+        else if (Engine.GetKeyDown(Key.Up, true))
         {
             spriteY -= 10;
         }
-        else if (Engine.GetKeyDown(Key.Down)) 
+        else if (Engine.GetKeyDown(Key.Down, true)) 
         {
             spriteY += 10;
         }
+
+        if (spriteY == Resolution.Y / 2) 
+        {
+            for (int i = 0; i < blocksY.Count; i++) 
+            {
+                blocksY[i] = blocksY[i] + 10;
+            }
+
+            spriteY += 20;
+        }
     }
+
+    public void addLayer() 
+    {
+        if (blocksY.Count == 0)
+        {
+            blocksX.Add(0);
+            blocksY.Add(0);
+
+            blocksX.Add(620);
+            blocksY.Add(0);
+        }
+        else if (blocksY[blocksY.Count - 2] > 50 && blocksY[blocksY.Count - 1] > 50) 
+        {
+            blocksX.Add(0);
+            blocksY.Add(0);
+
+            blocksX.Add(620);
+            blocksY.Add(0);
+        }
+    }
+
 }
