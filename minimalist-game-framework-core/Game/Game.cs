@@ -9,6 +9,9 @@ class Game
     readonly Texture _background = Engine.LoadTexture("Background.jpg");
 
     readonly Texture _sprite = Engine.LoadTexture("player.png");
+
+    readonly Font font = Engine.LoadFont("OpenSans-Regular.ttf", 10);
+
     int spriteX = 320;
     int spriteY = 280;
 
@@ -34,7 +37,7 @@ class Game
 
         addLayer();
 
-        Engine.DrawTexture(_sprite, new Vector2(spriteX, spriteY), null, new Vector2(25, 30));
+        Engine.DrawTexture(_sprite, new Vector2(spriteX, spriteY), null, new Vector2(20, 25));
 
         if (Engine.GetKeyDown(Key.Left, true))
         {
@@ -62,6 +65,12 @@ class Game
 
             spriteY += 20;
         }
+
+        if (playerIsOverlapping()) 
+        {
+            Engine.DrawString("OVERLAPPING", new Vector2(10, 440), Color.Red, font);
+        }
+
     }
 
     public void addLayer() 
@@ -74,14 +83,46 @@ class Game
             blocksX.Add(620);
             blocksY.Add(0);
         }
-        else if (blocksY[blocksY.Count - 2] > 50 && blocksY[blocksY.Count - 1] > 50) 
+        else if (blocksY[blocksY.Count - 2] > 100 && blocksY[blocksY.Count - 1] > 100) 
         {
-            blocksX.Add(0);
-            blocksY.Add(0);
+            Random rand = new Random();            
+            int bound = rand.Next(0, (int)Resolution.X);
 
-            blocksX.Add(620);
-            blocksY.Add(0);
+            while (bound % 20 != 0) 
+            {
+                bound = rand.Next(0, (int)Resolution.X - 60); 
+            }
+
+            for (int i = 0; i < bound; i += 20)
+            {
+                blocksX.Add(i);
+                blocksY.Add(0);
+            }
+
+            for (int i = bound + 60; i <= Resolution.X; i += 20) 
+            {
+                blocksX.Add(i);
+                blocksY.Add(0);
+            }
+
+    
         }
     }
+    
+    //check if the player overlaps with any blocks
+    public bool playerIsOverlapping() 
+    {
+        Bounds2 spritePosition = new Bounds2(new Vector2(spriteX, spriteY), new Vector2(20, 25));
 
+        for (int i = 0; i < blocksX.Count; i++)
+        {
+            Bounds2 floorBounds = new Bounds2(new Vector2(blocksX[i], blocksY[i]), new Vector2(20, 20));
+            if (spritePosition.Overlaps(floorBounds))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }
