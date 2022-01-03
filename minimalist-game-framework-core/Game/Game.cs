@@ -20,6 +20,7 @@ class Game
     List<int> blocksX = new List<int>();
     List<int> blocksY = new List<int>();
 
+    int totalPoints = 0;
     public Game()
     {
         
@@ -71,6 +72,9 @@ class Game
             Engine.DrawString("OVERLAPPING", new Vector2(10, 440), Color.Red, font);
         }
 
+        //displaying the number of points
+        Engine.DrawString(totalPoints.ToString(), new Vector2(440, 440), Color.Red, font);
+       
     }
 
     public void addLayer() 
@@ -82,6 +86,8 @@ class Game
 
             blocksX.Add(620);
             blocksY.Add(0);
+
+            totalPoints++;
         }
         else if (blocksY[blocksY.Count - 2] > 100 && blocksY[blocksY.Count - 1] > 100) 
         {
@@ -105,8 +111,9 @@ class Game
                 blocksY.Add(0);
             }
 
-    
+            totalPoints++;
         }
+        
     }
     
     //check if the player overlaps with any blocks
@@ -119,9 +126,23 @@ class Game
             Bounds2 floorBounds = new Bounds2(new Vector2(blocksX[i], blocksY[i]), new Vector2(20, 20));
             if (spritePosition.Overlaps(floorBounds))
             {
+                //correct the error
+                if (spriteY < blocksY[i])
+                {
+                    spriteY -= 10;
+                }
+                else if (spriteY > blocksY[i]) 
+                {
+                    spriteY += 10;
+                }
+
+
                 return true;
             }
         }
+
+        
+
 
         return false;
     }
