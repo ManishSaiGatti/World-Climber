@@ -15,6 +15,9 @@ class Game
     int spriteX = 320;
     int spriteY = 280;
 
+    int spriteSizeX = 20;
+    int spriteSizeY = 25;
+
     readonly Texture _block = Engine.LoadTexture("square.png");
 
     List<int> blocksX = new List<int>();
@@ -30,12 +33,19 @@ class Game
     {
         Engine.DrawTexture(_background, Vector2.Zero);
 
+        if (playerHitsBorders()) 
+        {
+            Engine.DrawString("HITTING BORDERS", new Vector2(10, 440), Color.Red, font);
+        }
+
+        //draw levels
         for (int i = 0; i < blocksX.Count; i++)
         {
             Vector2 vec = new Vector2(blocksX[i], blocksY[i]);
-            Engine.DrawTexture(_block, vec, null, new Vector2(20, 20));
+            Engine.DrawTexture(_block, vec, null, new Vector2(spriteSizeX, spriteSizeY));
         }
 
+        //if statement inside addLayer to see if a layer sould be added
         addLayer();
 
         Engine.DrawTexture(_sprite, new Vector2(spriteX, spriteY), null, new Vector2(20, 25));
@@ -119,6 +129,7 @@ class Game
     //check if the player overlaps with any blocks
     public bool playerIsOverlapping() 
     {
+
         Bounds2 spritePosition = new Bounds2(new Vector2(spriteX, spriteY), new Vector2(20, 25));
 
         for (int i = 0; i < blocksX.Count; i++)
@@ -145,5 +156,33 @@ class Game
 
 
         return false;
+    }
+
+    public bool playerHitsBorders() 
+    {
+        //borders
+        if (spriteX < 0)
+        {
+            spriteX += 10;
+            return true;
+        }
+        if (spriteX + spriteSizeX> (int)Resolution.X)
+        {
+            spriteX -= 10;
+            return true;
+        }
+        if (spriteY < 0)
+        {
+            spriteY += 10;
+            return true;
+        }
+        if (spriteY + spriteSizeY > (int)Resolution.Y)
+        {
+            spriteY -= 10;
+            return true;
+        }
+
+        return false;       
+
     }
 }
