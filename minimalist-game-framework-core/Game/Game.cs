@@ -22,6 +22,9 @@ class Game
 
     List<int> blocksX = new List<int>();
     List<int> blocksY = new List<int>();
+    //amount of time block needs to be hit before breaking
+    List<int> blockHitCount = new List<int>();
+
 
     int totalPoints = 0;
     public Game()
@@ -41,8 +44,10 @@ class Game
         //draw levels
         for (int i = 0; i < blocksX.Count; i++)
         {
-            Vector2 vec = new Vector2(blocksX[i], blocksY[i]);
-            Engine.DrawTexture(_block, vec, null, new Vector2(spriteSizeX, spriteSizeY));
+            
+             Vector2 vec = new Vector2(blocksX[i], blocksY[i]);
+             Engine.DrawTexture(_block, vec, null, new Vector2(spriteSizeX, spriteSizeY));
+            
         }
 
         //if statement inside addLayer to see if a layer sould be added
@@ -93,9 +98,11 @@ class Game
         {
             blocksX.Add(0);
             blocksY.Add(0);
+            blockHitCount.Add(4);
 
             blocksX.Add(620);
             blocksY.Add(0);
+            blockHitCount.Add(4);
 
             totalPoints++;
         }
@@ -113,12 +120,14 @@ class Game
             {
                 blocksX.Add(i);
                 blocksY.Add(0);
+                blockHitCount.Add(4);
             }
 
             for (int i = bound + 60; i <= Resolution.X; i += 20) 
             {
                 blocksX.Add(i);
                 blocksY.Add(0);
+                blockHitCount.Add(4);
             }
 
             totalPoints++;
@@ -141,13 +150,20 @@ class Game
                 if (spriteY < blocksY[i])
                 {
                     spriteY -= 10;
+                    blockHitCount[i] = blockHitCount[i] - 1;
                 }
                 else if (spriteY > blocksY[i]) 
                 {
                     spriteY += 10;
+                    blockHitCount[i] = blockHitCount[i] - 1;
                 }
 
-
+                if (blockHitCount[i] == 0) 
+                {
+                    blocksX.RemoveAt(i);
+                    blocksY.RemoveAt(i);
+                    blockHitCount.RemoveAt(i);
+                }
                 return true;
             }
         }
