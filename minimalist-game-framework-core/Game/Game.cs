@@ -3,147 +3,116 @@ using System.Collections.Generic;
 
 class Game
 {
-    public static readonly string Title = "IceClimber";
+    public static readonly string Title = "Minimalist Game Framework";
     public static readonly Vector2 Resolution = new Vector2(640, 480);
 
-    readonly Texture _background = Engine.LoadTexture("Background.jpg");
+    readonly Texture floorUnder = Engine.LoadTexture("undergroundFloor.png");
+    readonly Texture floorSand = Engine.LoadTexture("sandFloor.png");
+    readonly Texture floorIce = Engine.LoadTexture("iceFloor.png");
+    readonly Texture floorSpace = Engine.LoadTexture("spaceFloor.png");
+    readonly Texture underBack = Engine.LoadTexture("UndergroundBack.png");
+    readonly Texture sandBack = Engine.LoadTexture("SandBack.png");
+    readonly Texture iceBack = Engine.LoadTexture("IceBack.png");
+    readonly Texture spaceBack = Engine.LoadTexture("SpaceBack.png");
+    readonly Texture spaceBlack1 = Engine.LoadTexture("spaceBlack.png");
+    readonly Texture spaceBlack2 = Engine.LoadTexture("spaceBlack.png");
+    readonly Texture underSand = Engine.LoadTexture("underSand.png");
 
-    readonly Texture _sprite = Engine.LoadTexture("player.png");
+    private int screen = 1;
+    private float scrollValue = 0;
 
-    readonly Font font = Engine.LoadFont("OpenSans-Regular.ttf", 10);
+    private float spaceBack1Y = -2880;
+    private float spaceBack2Y = -3560;
 
-    int spriteX = 320;
-    int spriteY = 280;
+   
 
-    readonly Texture _block = Engine.LoadTexture("square.png");
-
-    List<int> blocksX = new List<int>();
-    List<int> blocksY = new List<int>();
-
-    int totalPoints = 0;
     public Game()
+
     {
-        
+
     }
 
     public void Update()
     {
-        Engine.DrawTexture(_background, Vector2.Zero);
-
-        for (int i = 0; i < blocksX.Count; i++)
+        
+        if (Engine.GetKeyDown(Key.NumRow1))
         {
-            Vector2 vec = new Vector2(blocksX[i], blocksY[i]);
-            Engine.DrawTexture(_block, vec, null, new Vector2(20, 20));
+            screen = 1;
         }
-
-        addLayer();
-
-        Engine.DrawTexture(_sprite, new Vector2(spriteX, spriteY), null, new Vector2(20, 25));
-
-        if (Engine.GetKeyDown(Key.Left, true))
+        if (Engine.GetKeyDown(Key.NumRow2))
         {
-            spriteX -= 10;
+            screen = 2;
+            scrollValue = 0;
         }
-        else if (Engine.GetKeyDown(Key.Right, true))
+        if (screen == 1)
         {
-            spriteX += 10;
-        }
-        else if (Engine.GetKeyDown(Key.Up, true))
-        {
-            spriteY -= 10;
-        }
-        else if (Engine.GetKeyDown(Key.Down, true)) 
-        {
-            spriteY += 10;
-        }
-
-        if (spriteY == Resolution.Y / 2) 
-        {
-            for (int i = 0; i < blocksY.Count; i++) 
+            if (Engine.GetKeyHeld(Key.U))
             {
-                blocksY[i] = blocksY[i] + 10;
+                Engine.DrawTexture(underBack, new Vector2(0, 0));
+                for (int i = 0; i < 640; i += 20)
+                {
+                    Engine.DrawTexture(floorUnder, new Vector2(i, 200));
+                }
+            }
+            if (Engine.GetKeyHeld(Key.O))
+            {
+                Engine.DrawTexture(sandBack, new Vector2(0, 0));
+                for (int i = 0; i < 640; i += 20)
+                {
+                    Engine.DrawTexture(floorSand, new Vector2(i, 200));
+                }
+            }
+            if (Engine.GetKeyHeld(Key.I))
+            {
+                Engine.DrawTexture(iceBack, new Vector2(0, 0));
+                for (int i = 0; i < 640; i += 20)
+                {
+                    Engine.DrawTexture(floorIce, new Vector2(i, 200));
+                }
+            }
+            if (Engine.GetKeyHeld(Key.P))
+            {
+                Engine.DrawTexture(spaceBack, new Vector2(0, 0));
+                for (int i = 0; i < 640; i += 20)
+                {
+                    Engine.DrawTexture(floorSpace, new Vector2(i, 200));
+                }
             }
 
-            spriteY += 20;
         }
-
-        if (playerIsOverlapping()) 
+        else if (screen == 2)
         {
-            Engine.DrawString("OVERLAPPING", new Vector2(10, 440), Color.Red, font);
-        }
+            Engine.DrawTexture(underBack, new Vector2(0, 0 + scrollValue));
+            Engine.DrawTexture(underSand, new Vector2(0, -960 + scrollValue));
+            Engine.DrawTexture(sandBack, new Vector2(0, -1440 + scrollValue));
+            Engine.DrawTexture(iceBack, new Vector2(0, -1920 + scrollValue));
+            Engine.DrawTexture(spaceBack, new Vector2(0, -2400 + scrollValue));
 
-        //displaying the number of points
-        Engine.DrawString(totalPoints.ToString(), new Vector2(440, 440), Color.Red, font);
-       
-    }
+            Engine.DrawTexture(spaceBlack1, new Vector2(0, spaceBack1Y));
+            Engine.DrawTexture(spaceBlack2, new Vector2(0, spaceBack2Y));
 
-    public void addLayer() 
-    {
-        if (blocksY.Count == 0)
-        {
-            blocksX.Add(0);
-            blocksY.Add(0);
-
-            blocksX.Add(620);
-            blocksY.Add(0);
-
-            totalPoints++;
-        }
-        else if (blocksY[blocksY.Count - 2] > 100 && blocksY[blocksY.Count - 1] > 100) 
-        {
-            Random rand = new Random();            
-            int bound = rand.Next(0, (int)Resolution.X);
-
-            while (bound % 20 != 0) 
+            if(spaceBack1Y >= 480)
             {
-                bound = rand.Next(0, (int)Resolution.X - 60); 
+                spaceBack1Y = -480;
+            }
+            if(spaceBack2Y >= 480)
+            {
+                spaceBack2Y = -480;
             }
 
-            for (int i = 0; i < bound; i += 20)
+            if (Engine.GetKeyHeld(Key.Down))
             {
-                blocksX.Add(i);
-                blocksY.Add(0);
-            }
+                scrollValue += 10f;
+                spaceBack1Y += 10f;
+                spaceBack2Y += 10f;
 
-            for (int i = bound + 60; i <= Resolution.X; i += 20) 
+            } else if (Engine.GetKeyHeld(Key.Up))
             {
-                blocksX.Add(i);
-                blocksY.Add(0);
+                scrollValue -= 10f;
+                spaceBack1Y -= 10f;
+                spaceBack2Y -= 10f;
             }
-
-            totalPoints++;
         }
         
-    }
-    
-    //check if the player overlaps with any blocks
-    public bool playerIsOverlapping() 
-    {
-        Bounds2 spritePosition = new Bounds2(new Vector2(spriteX, spriteY), new Vector2(20, 25));
-
-        for (int i = 0; i < blocksX.Count; i++)
-        {
-            Bounds2 floorBounds = new Bounds2(new Vector2(blocksX[i], blocksY[i]), new Vector2(20, 20));
-            if (spritePosition.Overlaps(floorBounds))
-            {
-                //correct the error
-                if (spriteY < blocksY[i])
-                {
-                    spriteY -= 10;
-                }
-                else if (spriteY > blocksY[i]) 
-                {
-                    spriteY += 10;
-                }
-
-
-                return true;
-            }
-        }
-
-        
-
-
-        return false;
     }
 }
