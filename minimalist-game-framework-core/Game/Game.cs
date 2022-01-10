@@ -38,7 +38,7 @@ class Game
     int totalPoints = 0;
     public Game()
     {
-        
+        addInitialLayers();
     }
 
     public void Update()
@@ -49,6 +49,8 @@ class Game
         {
             Engine.DrawString("HITTING BORDERS", new Vector2(10, 440), Color.Red, font);
         }
+
+
 
         //draw levels
         for (int i = 0; i < blocksX.Count; i++)
@@ -133,6 +135,18 @@ class Game
 
     }
 
+    public void addInitialLayers() 
+    {
+        for(int y = 0; y < (int)Resolution.Y; y += 100) 
+        {
+            for (int i = 0; i <= Resolution.X; i += 20)
+            {
+                blocksX.Add(i);
+                blocksY.Add(y);
+                blockHitCount.Add(4);
+            }
+        }
+    }
     public void addLayer() 
     {
         if (blocksY.Count == 0)
