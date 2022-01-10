@@ -15,6 +15,9 @@ class Game
     int spriteX = 320;
     int spriteY = 280;
 
+     Enemy enemy1 = new Enemy();
+    Boolean enemy1OnScreen = false;
+
     readonly Texture _block = Engine.LoadTexture("square.png");
 
     List<int> blocksX = new List<int>();
@@ -56,7 +59,7 @@ class Game
         {
             spriteY += 10;
         }
-
+        // shifts everything down
         if (spriteY == Resolution.Y / 2) 
         {
             for (int i = 0; i < blocksY.Count; i++) 
@@ -65,8 +68,17 @@ class Game
             }
 
             spriteY += 20;
+            if (enemy1OnScreen)
+            {
+                enemy1.setEnemyY(enemy1.getEnemyY() + 10);
+               
+            }
         }
 
+        if (enemy1OnScreen)
+        {
+            enemy1.drawEnemy();
+        }
         if (playerIsOverlapping()) 
         {
             Engine.DrawString("OVERLAPPING", new Vector2(10, 440), Color.Red, font);
@@ -79,6 +91,7 @@ class Game
 
     public void addLayer() 
     {
+        // create initial layer
         if (blocksY.Count == 0)
         {
             blocksX.Add(0);
@@ -89,6 +102,7 @@ class Game
 
             totalPoints++;
         }
+        // create new layer
         else if (blocksY[blocksY.Count - 2] > 100 && blocksY[blocksY.Count - 1] > 100) 
         {
             Random rand = new Random();            
@@ -112,6 +126,16 @@ class Game
             }
 
             totalPoints++;
+            if(!enemy1OnScreen && rand.Next(1, 5) == 3)
+            {
+                enemy1 = new Enemy();
+                enemy1OnScreen = true;
+            }
+            if(enemy1.getEnemyY() > 640)
+            {
+                enemy1OnScreen = false;
+            }
+                        
         }
         
     }
