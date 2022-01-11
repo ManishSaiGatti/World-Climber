@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 
 class Game
 {
@@ -109,7 +110,6 @@ class Game
 
 
         //trinket code
-
         //draw all the trinkets
         for (int i = 0; i < trinketX.Count; i++)
         {
@@ -147,7 +147,12 @@ class Game
             }
         }
     }
-    public void addLayer() 
+    
+    //returns an int array of two x-coordinates with the first representing the x-coordinate of the square
+    //at the beginning of the gap and the second being the x-coordinate that represents the last
+    //point of the square of the gap.
+    //*You just have to run the program and you will know what I mean
+    public int[] addLayer() 
     {
         if (blocksY.Count == 0)
         {
@@ -160,6 +165,8 @@ class Game
             blockHitCount.Add(4);
 
             totalPoints++;
+
+            return null;
         }
         else if (blocksY[blocksY.Count - 2] > 100 && blocksY[blocksY.Count - 1] > 100) 
         {
@@ -188,8 +195,13 @@ class Game
             totalPoints++;
 
             createTrinket();
+
+            int[] intervalOfGap = { bound, bound + 40 };
+
+            return intervalOfGap;
         }
-        
+
+        return null;
     }
     
     //check if the player overlaps with any blocks
