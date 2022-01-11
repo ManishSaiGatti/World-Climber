@@ -46,7 +46,7 @@ class Game
     {
         Engine.DrawTexture(_background, Vector2.Zero);
 
-        if (playerHitsBorders()) 
+        if (playerHitsBorders())
         {
             Engine.DrawString("HITTING BORDERS", new Vector2(10, 440), Color.Red, font);
         }
@@ -56,10 +56,10 @@ class Game
         //draw levels
         for (int i = 0; i < blocksX.Count; i++)
         {
-            
-             Vector2 vec = new Vector2(blocksX[i], blocksY[i]);
-             Engine.DrawTexture(_block, vec, null, new Vector2(spriteSizeX, spriteSizeY));
-            
+
+            Vector2 vec = new Vector2(blocksX[i], blocksY[i]);
+            Engine.DrawTexture(_block, vec, null, new Vector2(spriteSizeX, spriteSizeY));
+
         }
 
         //if statement inside addLayer to see if a layer sould be added
@@ -79,14 +79,14 @@ class Game
         {
             spriteY -= 10;
         }
-        else if (Engine.GetKeyDown(Key.Down, true)) 
+        else if (Engine.GetKeyDown(Key.Down, true))
         {
             spriteY += 10;
         }
 
-        if (spriteY == Resolution.Y / 2) 
+        if (spriteY == Resolution.Y / 2)
         {
-            for (int i = 0; i < blocksY.Count; i++) 
+            for (int i = 0; i < blocksY.Count; i++)
             {
                 blocksY[i] = blocksY[i] + 10;
             }
@@ -100,7 +100,7 @@ class Game
             spriteY += 20;
         }
 
-        if (playerIsOverlapping()) 
+        if (playerIsOverlapping())
         {
             Engine.DrawString("OVERLAPPING", new Vector2(10, 440), Color.Red, font);
         }
@@ -119,20 +119,37 @@ class Game
         }
 
         //collect trinkets
-        for(int i = 0; i < trinketX.Count; i++)
+        for (int i = 0; i < trinketX.Count; i++)
         {
             Bounds2 trinketBounds = new Bounds2(trinketX[i], trinketY[i], trinketSizeX, trinketSizeY);
 
             Bounds2 playerBounds = new Bounds2(spriteX, spriteY, spriteSizeX, spriteSizeY);
 
-            if (playerBounds.Overlaps(trinketBounds)) 
+            if (playerBounds.Overlaps(trinketBounds))
             {
                 trinketX.RemoveAt(i);
                 trinketY.RemoveAt(i);
                 totalPoints += 50;
-            }            
+            }
         }
 
+        //end game and add person to leaderboards
+        //Note: Person will only be added to leaderboards if game ends in this way.
+        if (Engine.GetKeyDown(Key.M))
+        {
+            string path = @"C:\Users\dandu\source\repos\recreate-a-classic-game-ice-climber\minimalist-game-framework-core\Assets\Leaderboards.txt";
+
+            if (!File.Exists(path))
+            {
+                Console.WriteLine("What is your name");
+                string name = Console.ReadLine();
+                // Create a file to write to.
+                using (StreamWriter sw = File.CreateText(path))
+                {
+                    sw.WriteLine(totalPoints);
+                }
+            }
+        }
     }
 
     public void addInitialLayers() 
