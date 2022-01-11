@@ -15,8 +15,9 @@ class Game
     int spriteX = 320;
     int spriteY = 280;
 
-     Enemy enemy1 = new Enemy();
+    Enemy enemy1 = new Enemy();
     Boolean enemy1OnScreen = false;
+    Boolean enemy1MoveLeft = true;
 
     readonly Texture _block = Engine.LoadTexture("square.png");
 
@@ -24,6 +25,8 @@ class Game
     List<int> blocksY = new List<int>();
 
     int totalPoints = 0;
+
+    Boolean gameOver = false;
     public Game()
     {
         
@@ -77,7 +80,25 @@ class Game
 
         if (enemy1OnScreen)
         {
+            
             enemy1.drawEnemy();
+            if(!enemy1MoveLeft)
+            {
+                enemy1.setEnemyX(enemy1.getEnemyX() + 1);
+                if (enemy1.getEnemyX() == enemy1.getInitialX())
+                {
+                    enemy1MoveLeft = true;
+                }
+            } 
+            else if(enemy1MoveLeft)
+            {
+                enemy1.setEnemyX(enemy1.getEnemyX() - 1);
+                if(enemy1.getEnemyX() < enemy1.getInitialX() - 50)
+                {
+                    enemy1MoveLeft = false;
+                }
+            }
+            
         }
         if (playerIsOverlapping()) 
         {
@@ -129,12 +150,14 @@ class Game
             if(!enemy1OnScreen && rand.Next(1, 5) == 3)
             {
                 enemy1 = new Enemy();
+                enemy1MoveLeft = true;
                 enemy1OnScreen = true;
             }
             if(enemy1.getEnemyY() > 640)
             {
                 enemy1OnScreen = false;
             }
+              
                         
         }
         
@@ -164,8 +187,13 @@ class Game
                 return true;
             }
         }
-
-        
+        Bounds2 enemyBounds = new Bounds2(new Vector2(enemy1.getEnemyX(), enemy1.getEnemyY())
+            , new Vector2(29, 29));
+        if (spritePosition.Overlaps(enemyBounds))
+        {
+            gameOver = true;
+            totalPoints = -1;
+        }
 
 
         return false;
