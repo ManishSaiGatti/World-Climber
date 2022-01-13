@@ -23,6 +23,9 @@ class Game
 
     readonly Texture _block = Engine.LoadTexture("square.png");
 
+    //number to indicate what screen you are on menu screen or game screen
+    int screenNumber = 0;
+
     List<int> blocksX = new List<int>();
     List<int> blocksY = new List<int>();
     //amount of time block needs to be hit before breaking
@@ -37,117 +40,154 @@ class Game
     int trinketSizeY = 30;
 
     int totalPoints = 0;
+
+    List<int> scores = new List<int>();
     public Game()
     {
         addInitialLayers();
+
+        //get the highest scores
+        string path = @"C:\Users\dandu\source\repos\recreate-a-classic-game-ice-climber\minimalist-game-framework-core\Assets\Leaderboards.txt";
+
+        using (StreamReader sr = File.OpenText(path))
+        {
+            string s;
+            while ((s = sr.ReadLine()) != null)
+            {
+                scores.Add(int.Parse(s));
+            }
+        }
+
+        scores.Sort();
+       
     }
 
     public void Update()
     {
-        Engine.DrawTexture(_background, Vector2.Zero);
-
-        if (playerHitsBorders())
+        if (screenNumber == 0)
         {
-            Engine.DrawString("HITTING BORDERS", new Vector2(10, 440), Color.Red, font);
-        }
+            Engine.DrawTexture(_background, Vector2.Zero);
 
+            Bounds2 buttonBounds = new Bounds2(Resolution.X / 2 - 100, Resolution.Y / 2 - 50, 100, 50);
+            Engine.DrawRectEmpty(buttonBounds, Color.DarkRed);
+            Engine.DrawString("Play Game", new Vector2(buttonBounds.Position.X + 40, buttonBounds.Position.Y + 15), Color.DarkRed, font);
 
+            if(scores.Count > 0)
+                Engine.DrawString("Highest Score of All: " + scores[scores.Count - 1].ToString(), new Vector2(buttonBounds.Position.X, buttonBounds.Position.Y - 25), Color.DarkRed, font);
 
-        //draw levels
-        for (int i = 0; i < blocksX.Count; i++)
-        {
-
-            Vector2 vec = new Vector2(blocksX[i], blocksY[i]);
-            Engine.DrawTexture(_block, vec, null, new Vector2(spriteSizeX, spriteSizeY));
-
-        }
-
-        //if statement inside addLayer to see if a layer sould be added
-        addLayer();
-
-        Engine.DrawTexture(_sprite, new Vector2(spriteX, spriteY), null, new Vector2(20, 25));
-
-        if (Engine.GetKeyDown(Key.Left, true))
-        {
-            spriteX -= 10;
-        }
-        else if (Engine.GetKeyDown(Key.Right, true))
-        {
-            spriteX += 10;
-        }
-        else if (Engine.GetKeyDown(Key.Up, true))
-        {
-            spriteY -= 10;
-        }
-        else if (Engine.GetKeyDown(Key.Down, true))
-        {
-            spriteY += 10;
-        }
-
-        if (spriteY == Resolution.Y / 2)
-        {
-            for (int i = 0; i < blocksY.Count; i++)
+            if (Engine.GetMouseButtonDown(MouseButton.Left))
             {
-                blocksY[i] = blocksY[i] + 10;
-            }
-
-            //fixing the trinkets
-            for (int i = 0; i < trinketY.Count; i++)
-            {
-                trinketY[i] = trinketY[i] + 10;
-            }
-
-            spriteY += 20;
-        }
-
-        if (playerIsOverlapping())
-        {
-            Engine.DrawString("OVERLAPPING", new Vector2(10, 440), Color.Red, font);
-        }
-
-        //displaying the number of points
-        Engine.DrawString(totalPoints.ToString(), new Vector2(440, 440), Color.Red, font);
-
-
-        //trinket code
-        //draw all the trinkets
-        for (int i = 0; i < trinketX.Count; i++)
-        {
-            Vector2 vec = new Vector2(trinketX[i], trinketY[i]);
-            Engine.DrawTexture(trinketSkin, vec, null, new Vector2(trinketSizeX, trinketSizeY));
-
-        }
-
-        //collect trinkets
-        for (int i = 0; i < trinketX.Count; i++)
-        {
-            Bounds2 trinketBounds = new Bounds2(trinketX[i], trinketY[i], trinketSizeX, trinketSizeY);
-
-            Bounds2 playerBounds = new Bounds2(spriteX, spriteY, spriteSizeX, spriteSizeY);
-
-            if (playerBounds.Overlaps(trinketBounds))
-            {
-                trinketX.RemoveAt(i);
-                trinketY.RemoveAt(i);
-                totalPoints += 50;
+                screenNumber = 1;
             }
         }
-
-        //end game and add person to leaderboards
-        //Note: Person will only be added to leaderboards if game ends in this way.
-        if (Engine.GetKeyDown(Key.M))
+        else if (screenNumber == 1)
         {
-            string path = @"C:\Users\dandu\source\repos\recreate-a-classic-game-ice-climber\minimalist-game-framework-core\Assets\Leaderboards.txt";
+            Engine.DrawTexture(_background, Vector2.Zero);
 
-            if (!File.Exists(path))
+            if (playerHitsBorders())
             {
-                Console.WriteLine("What is your name");
-                string name = Console.ReadLine();
-                // Create a file to write to.
-                using (StreamWriter sw = File.CreateText(path))
+                Engine.DrawString("HITTING BORDERS", new Vector2(10, 440), Color.Red, font);
+            }
+
+            //draw levels
+            for (int i = 0; i < blocksX.Count; i++)
+            {
+
+                Vector2 vec = new Vector2(blocksX[i], blocksY[i]);
+                Engine.DrawTexture(_block, vec, null, new Vector2(spriteSizeX, spriteSizeY));
+
+            }
+
+            //if statement inside addLayer to see if a layer sould be added
+            addLayer();
+
+            Engine.DrawTexture(_sprite, new Vector2(spriteX, spriteY), null, new Vector2(20, 25));
+
+            if (Engine.GetKeyDown(Key.Left, true))
+            {
+                spriteX -= 10;
+            }
+            else if (Engine.GetKeyDown(Key.Right, true))
+            {
+                spriteX += 10;
+            }
+            else if (Engine.GetKeyDown(Key.Up, true))
+            {
+                spriteY -= 10;
+            }
+            else if (Engine.GetKeyDown(Key.Down, true))
+            {
+                spriteY += 10;
+            }
+
+            if (spriteY == Resolution.Y / 2)
+            {
+                for (int i = 0; i < blocksY.Count; i++)
                 {
-                    sw.WriteLine(totalPoints);
+                    blocksY[i] = blocksY[i] + 10;
                 }
+
+                //fixing the trinkets
+                for (int i = 0; i < trinketY.Count; i++)
+                {
+                    trinketY[i] = trinketY[i] + 10;
+                }
+
+                spriteY += 20;
+            }
+
+            if (playerIsOverlapping())
+            {
+                Engine.DrawString("OVERLAPPING", new Vector2(10, 440), Color.Red, font);
+            }
+
+            //displaying the number of points
+            Engine.DrawString(totalPoints.ToString(), new Vector2(440, 440), Color.Red, font);
+
+
+            //trinket code
+            //draw all the trinkets
+            for (int i = 0; i < trinketX.Count; i++)
+            {
+                Vector2 vec = new Vector2(trinketX[i], trinketY[i]);
+                Engine.DrawTexture(trinketSkin, vec, null, new Vector2(trinketSizeX, trinketSizeY));
+
+            }
+
+            //collect trinkets
+            for (int i = 0; i < trinketX.Count; i++)
+            {
+                Bounds2 trinketBounds = new Bounds2(trinketX[i], trinketY[i], trinketSizeX, trinketSizeY);
+
+                Bounds2 playerBounds = new Bounds2(spriteX, spriteY, spriteSizeX, spriteSizeY);
+
+                if (playerBounds.Overlaps(trinketBounds))
+                {
+                    trinketX.RemoveAt(i);
+                    trinketY.RemoveAt(i);
+                    totalPoints += 50;
+                }
+            }
+
+            //end game and add person to leaderboards
+            //Note: Person will only be added to leaderboards if game ends in this way.
+            if (Engine.GetKeyDown(Key.M))
+            {
+                string path = @"C:\Users\dandu\source\repos\recreate-a-classic-game-ice-climber\minimalist-game-framework-core\Assets\Leaderboards.txt";
+
+                if (File.Exists(path))
+                {
+                    //Console.WriteLine("What is your name");
+                    //string name = Console.ReadLine();
+                    // Create a file to write to.
+                    using (StreamWriter sw = File.CreateText(path))
+                    {
+                        sw.WriteLine(totalPoints);
+                    }
+                }
+
+                scores.Sort();
+                screenNumber = 0;
             }
         }
     }
