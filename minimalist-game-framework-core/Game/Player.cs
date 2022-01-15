@@ -5,7 +5,7 @@ using System.Text;
 class Player
 {
     //public Texture texture = Engine.LoadTexture("png");
-    private readonly Texture texture = Engine.LoadTexture("FillerPlayer2.png");
+    private Texture texture = Engine.LoadTexture("pickaxeSprite2.png");
 
     public float xPos = 240;
     public float yPos = 350;
@@ -13,6 +13,11 @@ class Player
     public Texture getTexture()
     {
         return texture;
+    }
+
+    public void changeTexture(Texture t)
+    {
+        texture = t;
     }
 
     public Vector2 getVectorPos()
