@@ -63,17 +63,6 @@ class Game
 
         addLayer();
 
-        //Engine.DrawTexture(_sprite, new Vector2(spriteX, spriteY), null, new Vector2(20, 25));
-
-        //if (Engine.GetKeyDown(Key.Left))
-        //{
-        //    spriteX -= 10;
-        //}
-        //else if (Engine.GetKeyDown(Key.Right, true))
-        //{
-        //    spriteX += 10;
-        //}
-
         if (Engine.GetKeyHeld(Key.Left))
         {
             player.left();
@@ -84,61 +73,11 @@ class Game
             player.right();
         }
 
-
-        //if (Engine.GetKeyDown(Key.Up, true))
-        //{
-        //    spriteY -= 10;
-        //}
-        //else if (Engine.GetKeyDown(Key.Down, true))
-        //{
-        //    spriteY += 10;
-        //}
-
         if (Engine.GetKeyDown(Key.X))
         {
             player.yPos = 350;
         }
 
-        //if (player.yPos <= blockY - 100)
-        //{
-        //    subtract += 30;
-        //    blockY -= 100;
-        //    Console.WriteLine("bY: " + blockY + " sub: " + blocksY[blocksY.Count - subtract]);
-        //}
-
-        //if (Engine.GetKeyDown(Key.Up) && player.yPos >= blocksY[blocksY.Count - subtract] - 36)
-        //{
-        //    playerVelocity = 5.5f;
-        //    player.up(playerVelocity);
-        //}
-        //if (player.yPos < blocksY[blocksY.Count - subtract] - 36)
-        //{
-        //    player.up(playerVelocity);
-        //    /*if (player.yPos <= blocksY[blocksY.Count - 64] + 21)
-        //    {
-        //        playerVelocity = 0;
-        //    }
-        //    else*/
-        //    playerVelocity -= 0.1f;
-        //}
-
-        //if (Engine.GetKeyDown(Key.Up) && blocksY.Contains((int)(player.yPos + 31)))
-        //{
-        //    playerVelocity = 5.5f;
-        //    player.up(playerVelocity);
-        //    Console.WriteLine("up key pressed: " + Engine.GetKeyDown(Key.Up));
-        //}
-        //if (!blocksY.Contains((int)(player.yPos + 31)))
-        //{
-        //    player.up(playerVelocity);
-        //    /*if (player.yPos <= blocksY[blocksY.Count - 64] + 21)
-        //    {
-        //        playerVelocity = 0;
-        //    }
-        //    else*/
-        //    //playerVelocity -= 0.1f;
-        //    Console.WriteLine("pos: " + (player.yPos + 31) + " vel: " + playerVelocity);
-        //}
         if (player.xPos < -13)
         {
             player.xPos = 640;
@@ -151,9 +90,6 @@ class Game
         bool isInRange = false;
         for(int i = 0; i < blocksY.Count; i ++)
         {
-            //Console.WriteLine("blockY: " + blocksY[i]);
-            //Console.WriteLine("lowerY: " + (player.yPos + 32f));
-            //Console.WriteLine("upperY: " + (player.yPos + 29f));
             if (blocksY[i] < player.yPos + 33f && blocksY[i] > player.yPos + 27f)
             {
                 isInRange = true;
@@ -163,48 +99,23 @@ class Game
         }
 
         bool stopMoving = false;
-        //Console.WriteLine("Overlapping: " + playerIsOverlapping());
         if(isInRange && playerVelocity <= 0 && playerIsOverlapping())
         {
             stopMoving = true;
-            //playerVelocity = 0;
         }
-        //Console.WriteLine("inRange: " + isInRange);
-
-        //int closestBlock = ((int)(player.xPos)| 19) + 1;
-        //if(!blocksX.Contains(closestBlock - 20))
-        //{
-
-        //}
 
         if (Engine.GetKeyDown(Key.Up) && isInRange && stopMoving)
         {
             playerVelocity = maxVelocity;
             player.up(playerVelocity);
             generate = true;
-            Console.WriteLine("up key pressed: " + Engine.GetKeyDown(Key.Up));
         }
-        //if(playerVelocity <= 0)
+
         if (!stopMoving)
         {
             player.up(playerVelocity);
             playerVelocity -= 0.1f;
-            Console.WriteLine("yPos: " + (player.yPos + 31));
         }
-        //Console.WriteLine("blockXVals: " + String.Join(",", blocksY));
-
-        //if (Engine.GetKeyDown(Key.Up) && yLevels.Contains(player.yPos + 31f))
-        //{
-        //    playerVelocity = 5f;
-        //    player.up(playerVelocity);
-        //    Console.WriteLine("up key pressed: " + Engine.GetKeyDown(Key.Up));
-        //}
-        //if (!yLevels.Contains(player.yPos + 31f))
-        //{
-        //    player.up(playerVelocity);
-        //    playerVelocity -= 0.1f;
-        //    Console.WriteLine("yPos: " + (player.yPos + 31));
-        //}
 
         if (player.yPos > Resolution.Y / 2 - 3 && player.yPos < Resolution.Y / 2 + 3 && generate)
         {
@@ -213,9 +124,7 @@ class Game
                 blocksY[i] = blocksY[i] + 30;
             }
 
-            //maxVelocity = 6f;
             player.yPos += 20;
-            //generate = false;
         }
 
         if (playerIsOverlapping())
@@ -243,17 +152,6 @@ class Game
 
     public void addLayer()
     {
-        //if (blocksY.Count == 0)
-        //{
-        //    for (int i = 0; i <= 620; i += 20)
-        //    {
-        //        blocksX.Add(i);
-        //        blocksY.Add(220);
-        //    }
-
-        //    totalPoints++;
-        //}
-
         if (blocksY.Count == 0)
         {
             blocksX.Add(0);
@@ -276,9 +174,6 @@ class Game
                 bound = rand.Next(0, (int)Resolution.X - 60);
             }
 
-            //Console.WriteLine(blocksY.ToArray());
-            //Console.WriteLine(String.Join(",", blocksY));
-
             for (int i = 0; i < bound; i += 20)
             {
                 blocksX.Add(i);
@@ -294,9 +189,6 @@ class Game
             }
 
             totalPoints++;
-            Console.WriteLine("List: ");
-            Console.WriteLine(String.Join(",", blocksY));
-            Console.WriteLine(blocksY[blocksY.Count - subtract]);
         }
 
     }
@@ -316,9 +208,6 @@ class Game
                 //correct the error
                 if (player.yPos + 12 <= blocksY[i] - 30)
                 {
-                    //player.yPos -= 100;
-                    //blockHitCount[i] = blockHitCount[i] - 1;
-                    //player.yPos = blocksY[i] + 42f;
                     return false;
                 }
                 else if (player.yPos > blocksY[i])
