@@ -63,13 +63,7 @@ class Game
 
         addLayer();
         
-        for(int i = 0; i < blocks.Count; i++)
-        {
-            if(blocks[i].getY() > 480)
-            {
-                blocks.RemoveAt(i);
-            }
-        }
+
 
         if (Engine.GetKeyHeld(Key.Left))
         {
