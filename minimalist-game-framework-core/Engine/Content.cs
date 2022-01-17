@@ -119,6 +119,10 @@ class Texture
     public readonly int Height;
     public readonly Vector2 Size;
 
+    public Texture(string v)
+    {
+    }
+
     public Texture(IntPtr handle, int width, int height)
     {
         Handle = handle;

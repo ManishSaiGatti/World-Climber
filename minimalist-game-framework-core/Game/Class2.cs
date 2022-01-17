@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-class Game
+class Class2
 {
     public static readonly string Title = "IceClimber";
     public static readonly Vector2 Resolution = new Vector2(640, 480);
@@ -10,7 +10,6 @@ class Game
 
     Player player = new Player();
     float playerVelocity = 0f;
-    float maxVelocity = 5f;
 
     readonly Texture _sprite = Engine.LoadTexture("pickaxeSprite2.png");
 
@@ -34,20 +33,9 @@ class Game
     int trinketSizeX = 20;
     int trinketSizeY = 30;
 
-    int blockY = 350;
-    int subtract = 34;
-    List<float> yLevels = new List<float>();
-
-    bool generate = false;
-
-    public Game()
+    public Class2()
     {
         addInitialLayers();
-        yLevels.Add(0);
-        yLevels.Add(100);
-        yLevels.Add(200);
-        yLevels.Add(300);
-        yLevels.Add(400);
     }
 
     public void Update()
@@ -62,14 +50,17 @@ class Game
         }
 
         addLayer();
-        
-        for(int i = 0; i < blocks.Count; i++)
-        {
-            if(blocks[i].getY() > 480)
-            {
-                blocks.RemoveAt(i);
-            }
-        }
+
+        Engine.DrawTexture(_sprite, new Vector2(spriteX, spriteY), null, new Vector2(20, 25));
+
+        //if (Engine.GetKeyDown(Key.Left))
+        //{
+        //    spriteX -= 10;
+        //}
+        //else if (Engine.GetKeyDown(Key.Right, true))
+        //{
+        //    spriteX += 10;
+        //}
 
         if (Engine.GetKeyHeld(Key.Left))
         {
@@ -81,55 +72,44 @@ class Game
             player.right();
         }
 
+
+        //if (Engine.GetKeyDown(Key.Up, true))
+        //{
+        //    spriteY -= 10;
+        //}
+        //else if (Engine.GetKeyDown(Key.Down, true))
+        //{
+        //    spriteY += 10;
+        //}
+
         if (Engine.GetKeyDown(Key.X))
         {
-            player.yPos = 350;
+            player.yPos = 105;
         }
 
-        if (player.xPos < -13)
+        if (Engine.GetKeyDown(Key.Up) && player.yPos >= blocksY[0] - 99)
         {
-            player.xPos = 640;
+            playerVelocity = 5.5f;
+            player.up(playerVelocity);
         }
-        if (player.xPos > 640)
+        if (player.yPos < blocksY[0] - 99)
         {
-            player.xPos = -13;
-        }
-
-        bool isInRange = false;
-        for(int i = 0; i < blocksY.Count; i ++)
-        {
-            if (blocksY[i] < player.yPos + 33f && blocksY[i] > player.yPos + 27f)
+            player.up(playerVelocity);
+            if (player.yPos <= blocksY[blocksY.Count - 1] + 21)
             {
-                isInRange = true;
-                player.yPos = blocksY[i] - 30f;
-                break;
+                playerVelocity = 0;
+            }
+            else
+            {
+                playerVelocity -= 0.1f;
             }
         }
 
-        bool stopMoving = false;
-        if(isInRange && playerVelocity <= 0 && playerIsOverlapping())
-        {
-            stopMoving = true;
-        }
-
-        if (Engine.GetKeyDown(Key.Up) && isInRange && stopMoving)
-        {
-            playerVelocity = maxVelocity;
-            player.up(playerVelocity);
-            generate = true;
-        }
-
-        if (!stopMoving)
-        {
-            player.up(playerVelocity);
-            playerVelocity -= 0.1f;
-        }
-
-        if (player.yPos > Resolution.Y / 2 - 3 && player.yPos < Resolution.Y / 2 + 3 && generate)
+        if (player.yPos == Resolution.Y / 2)
         {
             for (int i = 0; i < blocksY.Count; i++)
             {
-                blocksY[i] = blocksY[i] + 30;
+                blocksY[i] = blocksY[i] + 10;
             }
 
             player.yPos += 20;
@@ -153,7 +133,7 @@ class Game
             {
                 blocksX.Add(i);
                 blocksY.Add(y);
-                blockHitCount.Add(1);
+                blockHitCount.Add(4);
             }
         }
     }
@@ -162,13 +142,11 @@ class Game
     {
         if (blocksY.Count == 0)
         {
-            blocksX.Add(0);
-            blocksY.Add(0);
-            blockHitCount.Add(1);
-
-            blocksX.Add(620);
-            blocksY.Add(0);
-            blockHitCount.Add(1);
+            for (int i = 0; i <= 620; i += 20)
+            {
+                blocksX.Add(i);
+                blocksY.Add(220);
+            }
 
             totalPoints++;
         }
@@ -182,21 +160,25 @@ class Game
                 bound = rand.Next(0, (int)Resolution.X - 60);
             }
 
+            //Console.WriteLine(blocksY.ToArray());
+            //Console.WriteLine(String.Join(",", blocksY));
+
             for (int i = 0; i < bound; i += 20)
             {
                 blocksX.Add(i);
                 blocksY.Add(0);
-                blockHitCount.Add(1);
             }
 
             for (int i = bound + 60; i <= Resolution.X; i += 20)
             {
                 blocksX.Add(i);
                 blocksY.Add(0);
-                blockHitCount.Add(1);
             }
 
             totalPoints++;
+            //Console.WriteLine("List: ");
+            //Console.WriteLine(String.Join(",", blocksY));
+            //Console.WriteLine(blocksY[0] + 1);
         }
 
     }
@@ -204,38 +186,31 @@ class Game
     //check if the player overlaps with any blocks
     public bool playerIsOverlapping()
     {
-
-        Bounds2 spritePosition = new Bounds2(new Vector2(player.xPos, player.yPos), new Vector2(13, 30));
+        Bounds2 spritePosition = new Bounds2(player.getVectorPos(), new Vector2(20, 25));
 
         for (int i = 0; i < blocksX.Count; i++)
         {
             Bounds2 floorBounds = new Bounds2(new Vector2(blocksX[i], blocksY[i]), new Vector2(20, 20));
             if (spritePosition.Overlaps(floorBounds))
             {
-                playerVelocity = 0;
                 //correct the error
-                if (player.yPos + 12 <= blocksY[i] - 30)
+                if (player.yPos < blocksY[i])
                 {
-                    return false;
+                    player.yPos -= 10;
                 }
                 else if (player.yPos > blocksY[i])
                 {
                     player.yPos += 10;
-                    blockHitCount[i] = 0;
                 }
 
-                if (blockHitCount[i] == 0)
-                {
-                    blocksX.RemoveAt(i);
-                    blocksY.RemoveAt(i);
-                    blockHitCount.RemoveAt(i);
 
-                    //lose points for breaking a block rather than going through the hole.
-                    totalPoints -= 4;
-                }
                 return true;
             }
         }
+
+
+
+
         return false;
     }
 }
