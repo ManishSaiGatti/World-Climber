@@ -8,95 +8,123 @@ class Class3
 
     readonly Texture _background = Engine.LoadTexture("Background.jpg");
 
+    Player player = new Player();
+    float playerVelocity = 0f;
+    float maxVelocity = 5f;
+
     readonly Texture _sprite = Engine.LoadTexture("pickaxeSprite2.png");
 
     readonly Font font = Engine.LoadFont("OpenSans-Regular.ttf", 10);
 
-    readonly Texture prizeSkin = Engine.LoadTexture("eastern_orthodox_cross.png");
-
     int spriteX = 320;
     int spriteY = 280;
-
-    int spriteSizeX = 20;
-    int spriteSizeY = 25;
 
     readonly Texture _block = Engine.LoadTexture("square.png");
 
     List<int> blocksX = new List<int>();
     List<int> blocksY = new List<int>();
-    //amount of time block needs to be hit before breaking
+
     List<int> blockHitCount = new List<int>();
 
+    int totalPoints = 0;
 
-    //bonus trinkets
     readonly Texture trinketSkin = Engine.LoadTexture("eastern_orthodox_cross.png");
     List<int> trinketX = new List<int>();
     List<int> trinketY = new List<int>();
     int trinketSizeX = 20;
     int trinketSizeY = 30;
 
-    int totalPoints = 0;
+    int blockY = 350;
+    int subtract = 34;
+    List<float> yLevels = new List<float>();
+
+    bool generate = false;
+
     public Class3()
     {
         addInitialLayers();
+        yLevels.Add(0);
+        yLevels.Add(100);
+        yLevels.Add(200);
+        yLevels.Add(300);
+        yLevels.Add(400);
     }
 
     public void Update()
     {
         Engine.DrawTexture(_background, Vector2.Zero);
+        Engine.DrawTexture(player.getTexture(), player.getVectorPos());
 
-        if (playerHitsBorders())
-        {
-            Engine.DrawString("HITTING BORDERS", new Vector2(10, 440), Color.Red, font);
-        }
-
-
-
-        //draw levels
         for (int i = 0; i < blocksX.Count; i++)
         {
-
             Vector2 vec = new Vector2(blocksX[i], blocksY[i]);
-            Engine.DrawTexture(_block, vec, null, new Vector2(spriteSizeX, spriteSizeY));
-
+            Engine.DrawTexture(_block, vec, null, new Vector2(20, 20));
         }
 
-        //if statement inside addLayer to see if a layer sould be added
         addLayer();
 
-        Engine.DrawTexture(_sprite, new Vector2(spriteX, spriteY), null, new Vector2(20, 25));
-
-        if (Engine.GetKeyDown(Key.Left, true))
+        if (Engine.GetKeyHeld(Key.Left))
         {
-            spriteX -= 10;
-        }
-        else if (Engine.GetKeyDown(Key.Right, true))
-        {
-            spriteX += 10;
-        }
-        else if (Engine.GetKeyDown(Key.Up, true))
-        {
-            spriteY -= 10;
-        }
-        else if (Engine.GetKeyDown(Key.Down, true))
-        {
-            spriteY += 10;
+            player.left();
         }
 
-        if (spriteY == Resolution.Y / 2)
+        if (Engine.GetKeyHeld(Key.Right))
+        {
+            player.right();
+        }
+
+        if (Engine.GetKeyDown(Key.X))
+        {
+            player.yPos = 350;
+        }
+
+        if (player.xPos < -13)
+        {
+            player.xPos = 640;
+        }
+        if (player.xPos > 640)
+        {
+            player.xPos = -13;
+        }
+
+        bool isInRange = false;
+        for (int i = 0; i < blocksY.Count; i++)
+        {
+            if (blocksY[i] < player.yPos + 33f && blocksY[i] > player.yPos + 27f)
+            {
+                isInRange = true;
+                player.yPos = blocksY[i] - 30f;
+                break;
+            }
+        }
+
+        bool stopMoving = false;
+        if (isInRange && playerVelocity <= 0 && playerIsOverlapping())
+        {
+            stopMoving = true;
+        }
+
+        if (Engine.GetKeyDown(Key.Up) && isInRange && stopMoving)
+        {
+            playerVelocity = maxVelocity;
+            player.up(playerVelocity);
+            generate = true;
+        }
+
+        if (!stopMoving)
+        {
+            player.up(playerVelocity);
+            playerVelocity -= 0.1f;
+        }
+
+        if (player.yPos > Resolution.Y / 2 - 3 && player.yPos < Resolution.Y / 2 + 3 && generate)
         {
             for (int i = 0; i < blocksY.Count; i++)
             {
-                blocksY[i] = blocksY[i] + 10;
+                blocksY[i] = blocksY[i] + 30;
             }
 
-            //fixing the trinkets
-            for (int i = 0; i < trinketY.Count; i++)
-            {
-                trinketY[i] = trinketY[i] + 10;
-            }
-
-            spriteY += 20;
+            player.yPos += 20;
         }
 
         if (playerIsOverlapping())
@@ -106,32 +134,6 @@ class Class3
 
         //displaying the number of points
         Engine.DrawString(totalPoints.ToString(), new Vector2(440, 440), Color.Red, font);
-
-
-        //trinket code
-
-        //draw all the trinkets
-        for (int i = 0; i < trinketX.Count; i++)
-        {
-            Vector2 vec = new Vector2(trinketX[i], trinketY[i]);
-            Engine.DrawTexture(trinketSkin, vec, null, new Vector2(trinketSizeX, trinketSizeY));
-
-        }
-
-        //collect trinkets
-        for (int i = 0; i < trinketX.Count; i++)
-        {
-            Bounds2 trinketBounds = new Bounds2(trinketX[i], trinketY[i], trinketSizeX, trinketSizeY);
-
-            Bounds2 playerBounds = new Bounds2(spriteX, spriteY, spriteSizeX, spriteSizeY);
-
-            if (playerBounds.Overlaps(trinketBounds))
-            {
-                trinketX.RemoveAt(i);
-                trinketY.RemoveAt(i);
-                totalPoints += 50;
-            }
-        }
 
     }
 
@@ -143,21 +145,22 @@ class Class3
             {
                 blocksX.Add(i);
                 blocksY.Add(y);
-                blockHitCount.Add(4);
+                blockHitCount.Add(1);
             }
         }
     }
+
     public void addLayer()
     {
         if (blocksY.Count == 0)
         {
             blocksX.Add(0);
             blocksY.Add(0);
-            blockHitCount.Add(4);
+            blockHitCount.Add(1);
 
             blocksX.Add(620);
             blocksY.Add(0);
-            blockHitCount.Add(4);
+            blockHitCount.Add(1);
 
             totalPoints++;
         }
@@ -175,19 +178,17 @@ class Class3
             {
                 blocksX.Add(i);
                 blocksY.Add(0);
-                blockHitCount.Add(4);
+                blockHitCount.Add(1);
             }
 
             for (int i = bound + 60; i <= Resolution.X; i += 20)
             {
                 blocksX.Add(i);
                 blocksY.Add(0);
-                blockHitCount.Add(4);
+                blockHitCount.Add(1);
             }
 
             totalPoints++;
-
-            createTrinket();
         }
 
     }
@@ -196,23 +197,23 @@ class Class3
     public bool playerIsOverlapping()
     {
 
-        Bounds2 spritePosition = new Bounds2(new Vector2(spriteX, spriteY), new Vector2(20, 25));
+        Bounds2 spritePosition = new Bounds2(new Vector2(player.xPos, player.yPos), new Vector2(13, 30));
 
         for (int i = 0; i < blocksX.Count; i++)
         {
             Bounds2 floorBounds = new Bounds2(new Vector2(blocksX[i], blocksY[i]), new Vector2(20, 20));
             if (spritePosition.Overlaps(floorBounds))
             {
+                playerVelocity = 0;
                 //correct the error
-                if (spriteY < blocksY[i])
+                if (player.yPos + 12 <= blocksY[i] - 30)
                 {
-                    spriteY -= 10;
-                    blockHitCount[i] = blockHitCount[i] - 1;
+                    return false;
                 }
-                else if (spriteY > blocksY[i])
+                else if (player.yPos > blocksY[i])
                 {
-                    spriteY += 10;
-                    blockHitCount[i] = blockHitCount[i] - 1;
+                    player.yPos += 10;
+                    blockHitCount[i] = 0;
                 }
 
                 if (blockHitCount[i] == 0)
@@ -227,53 +228,6 @@ class Class3
                 return true;
             }
         }
-
-
-
-
         return false;
     }
-
-    public bool playerHitsBorders()
-    {
-        //borders
-        if (spriteX < 0)
-        {
-            spriteX += 10;
-            return true;
-        }
-        if (spriteX + spriteSizeX > (int)Resolution.X)
-        {
-            spriteX -= 10;
-            return true;
-        }
-        if (spriteY < 0)
-        {
-            spriteY += 10;
-            return true;
-        }
-        if (spriteY + spriteSizeY > (int)Resolution.Y)
-        {
-            spriteY -= 10;
-            return true;
-        }
-
-        return false;
-
-    }
-
-    //trinket method
-    public void createTrinket()
-    {
-        Random rand = new Random();
-        int bound = rand.Next(0, (int)Resolution.X);
-
-        trinketX.Add(bound);
-        trinketY.Add(blocksY[blocksY.Count - 1] - 30);
-    }
-
-
-
-
-
 }

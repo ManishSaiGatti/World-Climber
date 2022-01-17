@@ -8,46 +8,51 @@ class Game
 
     readonly Texture _background = Engine.LoadTexture("Background.jpg");
 
+    readonly Texture _sprite = Engine.LoadTexture("player.png");
+
+    readonly Font font = Engine.LoadFont("OpenSans-Regular.ttf", 10);
+
+    readonly Texture prizeSkin = Engine.LoadTexture("eastern_orthodox_cross.png");
+
+    int spriteX = 320;
+    int spriteY = 280;
+
     Player player = new Player();
     float playerVelocity = 0f;
     float maxVelocity = 5f;
 
-    readonly Texture _sprite = Engine.LoadTexture("pickaxeSprite2.png");
+    Enemy enemy1 = new Enemy();
+    Boolean enemy1OnScreen = false;
+    Boolean enemy1MoveLeft = true;
 
-    readonly Font font = Engine.LoadFont("OpenSans-Regular.ttf", 10);
+    int spriteSizeX = 20;
+    int spriteSizeY = 25;
 
-    int spriteX = 320;
-    int spriteY = 280;
 
     readonly Texture _block = Engine.LoadTexture("square.png");
 
     List<int> blocksX = new List<int>();
     List<int> blocksY = new List<int>();
-
+    //amount of time block needs to be hit before breaking
     List<int> blockHitCount = new List<int>();
 
-    int totalPoints = 0;
 
+    //bonus trinkets
     readonly Texture trinketSkin = Engine.LoadTexture("eastern_orthodox_cross.png");
     List<int> trinketX = new List<int>();
     List<int> trinketY = new List<int>();
     int trinketSizeX = 20;
     int trinketSizeY = 30;
 
-    int blockY = 350;
-    int subtract = 34;
-    List<float> yLevels = new List<float>();
+    int totalPoints = 0;
+
+    Boolean gameOver = false;
 
     bool generate = false;
 
     public Game()
     {
         addInitialLayers();
-        yLevels.Add(0);
-        yLevels.Add(100);
-        yLevels.Add(200);
-        yLevels.Add(300);
-        yLevels.Add(400);
     }
 
     public void Update()
@@ -55,13 +60,26 @@ class Game
         Engine.DrawTexture(_background, Vector2.Zero);
         Engine.DrawTexture(player.getTexture(), player.getVectorPos());
 
-        for (int i = 0; i < blocksX.Count; i++)
+        if (playerHitsBorders())
         {
-            Vector2 vec = new Vector2(blocksX[i], blocksY[i]);
-            Engine.DrawTexture(_block, vec, null, new Vector2(20, 20));
+            Engine.DrawString("HITTING BORDERS", new Vector2(10, 440), Color.Red, font);
         }
 
+
+
+        //draw levels
+        for (int i = 0; i < blocksX.Count; i++)
+        {
+
+            Vector2 vec = new Vector2(blocksX[i], blocksY[i]);
+            Engine.DrawTexture(_block, vec, null, new Vector2(spriteSizeX, spriteSizeY));
+
+        }
+
+        //if statement inside addLayer to see if a layer sould be added
         addLayer();
+
+        //Engine.DrawTexture(_sprite, new Vector2(spriteX, spriteY), null, new Vector2(20, 25));
 
         if (Engine.GetKeyHeld(Key.Left))
         {
@@ -88,7 +106,7 @@ class Game
         }
 
         bool isInRange = false;
-        for(int i = 0; i < blocksY.Count; i ++)
+        for (int i = 0; i < blocksY.Count; i++)
         {
             if (blocksY[i] < player.yPos + 33f && blocksY[i] > player.yPos + 27f)
             {
@@ -99,7 +117,7 @@ class Game
         }
 
         bool stopMoving = false;
-        if(isInRange && playerVelocity <= 0 && playerIsOverlapping())
+        if (isInRange && playerVelocity <= 0 && playerIsOverlapping())
         {
             stopMoving = true;
         }
@@ -124,9 +142,43 @@ class Game
                 blocksY[i] = blocksY[i] + 30;
             }
 
+            //fixing the trinkets
+            for (int i = 0; i < trinketY.Count; i++)
+            {
+                trinketY[i] = trinketY[i] + 30;
+            }
+
             player.yPos += 20;
+
+            if (enemy1OnScreen)
+            {
+                enemy1.setEnemyY(enemy1.getEnemyY() + 30);
+
+            }
         }
 
+        if (enemy1OnScreen)
+        {
+
+            enemy1.drawEnemy();
+            if (!enemy1MoveLeft)
+            {
+                enemy1.setEnemyX(enemy1.getEnemyX() + 1);
+                if (enemy1.getEnemyX() == enemy1.getInitialX())
+                {
+                    enemy1MoveLeft = true;
+                }
+            }
+            else if (enemy1MoveLeft)
+            {
+                enemy1.setEnemyX(enemy1.getEnemyX() - 1);
+                if (enemy1.getEnemyX() < enemy1.getInitialX() - 50)
+                {
+                    enemy1MoveLeft = false;
+                }
+            }
+
+        }
         if (playerIsOverlapping())
         {
             Engine.DrawString("OVERLAPPING", new Vector2(10, 440), Color.Red, font);
@@ -134,6 +186,32 @@ class Game
 
         //displaying the number of points
         Engine.DrawString(totalPoints.ToString(), new Vector2(440, 440), Color.Red, font);
+
+
+        //trinket code
+
+        //draw all the trinkets
+        for (int i = 0; i < trinketX.Count; i++)
+        {
+            Vector2 vec = new Vector2(trinketX[i], trinketY[i]);
+            Engine.DrawTexture(trinketSkin, vec, null, new Vector2(trinketSizeX, trinketSizeY));
+
+        }
+
+        //collect trinkets
+        for (int i = 0; i < trinketX.Count; i++)
+        {
+            Bounds2 trinketBounds = new Bounds2(trinketX[i], trinketY[i], trinketSizeX, trinketSizeY);
+
+            Bounds2 playerBounds = new Bounds2(player.xPos, player.yPos, 13, 30);
+
+            if (playerBounds.Overlaps(trinketBounds))
+            {
+                trinketX.RemoveAt(i);
+                trinketY.RemoveAt(i);
+                totalPoints += 50;
+            }
+        }
 
     }
 
@@ -149,9 +227,9 @@ class Game
             }
         }
     }
-
     public void addLayer()
     {
+        // create initial layer
         if (blocksY.Count == 0)
         {
             blocksX.Add(0);
@@ -164,6 +242,7 @@ class Game
 
             totalPoints++;
         }
+        // create new layer
         else if (blocksY[blocksY.Count - 2] > 100 && blocksY[blocksY.Count - 1] > 100)
         {
             Random rand = new Random();
@@ -189,6 +268,23 @@ class Game
             }
 
             totalPoints++;
+
+            if (!enemy1OnScreen && rand.Next(1, 5) == 3)
+            {
+                enemy1 = new Enemy();
+                enemy1MoveLeft = true;
+                enemy1OnScreen = true;
+            }
+            if (enemy1.getEnemyY() > 640)
+            {
+                enemy1OnScreen = false;
+            }
+
+
+
+
+            createTrinket();
+
         }
 
     }
@@ -228,6 +324,58 @@ class Game
                 return true;
             }
         }
+        Bounds2 enemyBounds = new Bounds2(new Vector2(enemy1.getEnemyX(), enemy1.getEnemyY())
+            , new Vector2(29, 29));
+        if (spritePosition.Overlaps(enemyBounds))
+        {
+            gameOver = true;
+            totalPoints = -1;
+        }
+
+
         return false;
     }
+
+    public bool playerHitsBorders()
+    {
+        //borders
+        if (spriteX < 0)
+        {
+            spriteX += 10;
+            return true;
+        }
+        if (spriteX + spriteSizeX > (int)Resolution.X)
+        {
+            spriteX -= 10;
+            return true;
+        }
+        if (spriteY < 0)
+        {
+            spriteY += 10;
+            return true;
+        }
+        if (spriteY + spriteSizeY > (int)Resolution.Y)
+        {
+            spriteY -= 10;
+            return true;
+        }
+
+        return false;
+
+    }
+
+    //trinket method
+    public void createTrinket()
+    {
+        Random rand = new Random();
+        int bound = rand.Next(0, (int)Resolution.X);
+
+        trinketX.Add(bound);
+        trinketY.Add(blocksY[blocksY.Count - 1] - 30);
+    }
+
+
+
+
+
 }
