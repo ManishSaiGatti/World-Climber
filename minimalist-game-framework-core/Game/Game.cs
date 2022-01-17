@@ -71,6 +71,14 @@ class Game
 
         //if statement inside addLayer to see if a layer sould be added
         addLayer();
+        
+        for(int i = 0; i < blocks.Count; i++)
+        {
+            if(blocks[i].getY() > 480)
+            {
+                blocks.RemoveAt(i);
+            }
+        }
 
         Engine.DrawTexture(_sprite, new Vector2(spriteX, spriteY), null, new Vector2(20, 25));
 
