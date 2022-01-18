@@ -320,7 +320,7 @@ class Game
         Bounds2 enemyBounds = new Bounds2(new Vector2(enemy1.getEnemyX(), enemy1.getEnemyY())
             , new Vector2(29, 29));
         if (spritePosition.Overlaps(enemyBounds))
-        {
+        {            
             gameOver = true;
             totalPoints = -1;
         }
@@ -331,6 +331,7 @@ class Game
 
     public bool GameOverByGoingOutsideOfBorders()
     {
+        gameOver = true;
         if (player.yPos + blockSizeY > (int)Resolution.Y)
         {
             return true;
