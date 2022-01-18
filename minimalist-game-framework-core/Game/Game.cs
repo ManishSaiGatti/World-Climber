@@ -294,7 +294,6 @@ class Game
     //check if the player overlaps with any blocks
     public bool playerIsOverlapping()
     {
-
         Bounds2 spritePosition = new Bounds2(new Vector2(player.xPos, player.yPos), new Vector2(13, 30));
 
         for (int i = 0; i < blocksX.Count; i++)
@@ -303,7 +302,7 @@ class Game
             if (spritePosition.Overlaps(floorBounds))
             {
                 playerVelocity = 0;
-                //correct the error
+                //correct the y - error
                 if (player.yPos + 12 <= blocksY[i] - 30)
                 {
                     return false;
