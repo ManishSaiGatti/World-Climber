@@ -14,8 +14,6 @@ class Game
 
     readonly Texture prizeSkin = Engine.LoadTexture("eastern_orthodox_cross.png");
 
-    int spriteX = 320;
-    int spriteY = 280;
 
     Player player = new Player();
     float playerVelocity = 0f;
@@ -25,8 +23,8 @@ class Game
     Boolean enemy1OnScreen = false;
     Boolean enemy1MoveLeft = true;
 
-    int spriteSizeX = 20;
-    int spriteSizeY = 25;
+    int blockSizeX = 20;
+    int blockSizeY = 25;
 
 
     readonly Texture _block = Engine.LoadTexture("square.png");
@@ -47,6 +45,7 @@ class Game
 
     bool generate = false;
 
+
     public Game()
     {
         addInitialLayers();
@@ -57,19 +56,10 @@ class Game
         Engine.DrawTexture(_background, Vector2.Zero);
         Engine.DrawTexture(player.getTexture(), player.getVectorPos());
 
-        if (playerHitsBorders())
-        {
-            Engine.DrawString("HITTING BORDERS", new Vector2(10, 440), Color.Red, font);
-        }
-
-
-
         //draw levels
         for (int i = 0; i < blocks.Count; i++)
         {
-
             blocks[i].drawBlock();
-
         }
 
         //if statement inside addLayer to see if a layer sould be added
@@ -111,6 +101,7 @@ class Game
                 break;
             }
         }
+
 
         bool stopMoving = false;
         if (isInRange && playerVelocity <= 0 && playerIsOverlapping())
@@ -175,13 +166,14 @@ class Game
             }
 
         }
+
         if (playerIsOverlapping())
         {
             Engine.DrawString("OVERLAPPING", new Vector2(10, 440), Color.Red, font);
         }
 
         //displaying the number of points
-        Engine.DrawString(totalPoints.ToString(), new Vector2(440, 440), Color.Red, font);
+        Engine.DrawString(totalPoints.ToString(), new Vector2(Resolution.X - 10, 10), Color.Red, font);
 
 
         //trinket code
@@ -321,27 +313,10 @@ class Game
         return false;
     }
 
-    public bool playerHitsBorders()
+    public bool GameOverByGoingOutsideOfBorders()
     {
-        //borders
-        if (spriteX < 0)
+        if (player.yPos + blockSizeY > (int)Resolution.Y)
         {
-            spriteX += 10;
-            return true;
-        }
-        if (spriteX + spriteSizeX > (int)Resolution.X)
-        {
-            spriteX -= 10;
-            return true;
-        }
-        if (spriteY < 0)
-        {
-            spriteY += 10;
-            return true;
-        }
-        if (spriteY + spriteSizeY > (int)Resolution.Y)
-        {
-            spriteY -= 10;
             return true;
         }
 
