@@ -81,16 +81,6 @@ class Game
 
         //Engine.DrawTexture(_sprite, new Vector2(spriteX, spriteY), null, new Vector2(20, 25));
 
-        if (Engine.GetKeyHeld(Key.Left))
-        {
-            player.left();
-        }
-
-        if (Engine.GetKeyHeld(Key.Right))
-        {
-            player.right();
-        }
-
         if (Engine.GetKeyDown(Key.X))
         {
             player.yPos = 350;
@@ -133,6 +123,16 @@ class Game
         {
             player.up(playerVelocity);
             playerVelocity -= 0.1f;
+        }
+
+        if (Engine.GetKeyHeld(Key.Left))
+        {
+            player.left();
+        }
+
+        if (Engine.GetKeyHeld(Key.Right))
+        {
+            player.right();
         }
 
         if (player.yPos > Resolution.Y / 2 - 3 && player.yPos < Resolution.Y / 2 + 3 && generate)
