@@ -31,10 +31,7 @@ class Game
 
     readonly Texture _block = Engine.LoadTexture("square.png");
 
-    List<int> blocksX = new List<int>();
-    List<int> blocksY = new List<int>();
-    //amount of time block needs to be hit before breaking
-    List<int> blockHitCount = new List<int>();
+    List<Block> blocks = new List<Block>();
 
 
     //bonus trinkets
@@ -68,11 +65,10 @@ class Game
 
 
         //draw levels
-        for (int i = 0; i < blocksX.Count; i++)
+        for (int i = 0; i < blocks.Count; i++)
         {
 
-            Vector2 vec = new Vector2(blocksX[i], blocksY[i]);
-            Engine.DrawTexture(_block, vec, null, new Vector2(spriteSizeX, spriteSizeY));
+            blocks[i].drawBlock();
 
         }
 
@@ -106,12 +102,12 @@ class Game
         }
 
         bool isInRange = false;
-        for (int i = 0; i < blocksY.Count; i++)
+        for (int i = 0; i < blocks.Count; i++)
         {
-            if (blocksY[i] < player.yPos + 33f && blocksY[i] > player.yPos + 27f)
+            if (blocks[i].getY() < player.yPos + 33f && blocks[i].getY() > player.yPos + 27f)
             {
                 isInRange = true;
-                player.yPos = blocksY[i] - 30f;
+                player.yPos = blocks[i].getY() - 30f;
                 break;
             }
         }
@@ -137,9 +133,9 @@ class Game
 
         if (player.yPos > Resolution.Y / 2 - 3 && player.yPos < Resolution.Y / 2 + 3 && generate)
         {
-            for (int i = 0; i < blocksY.Count; i++)
+            for (int i = 0; i < blocks.Count; i++)
             {
-                blocksY[i] = blocksY[i] + 30;
+                blocks[i].changeY(blocks[i].getY() + 30);
             }
 
             //fixing the trinkets
@@ -221,29 +217,24 @@ class Game
         {
             for (int i = 0; i <= Resolution.X; i += 20)
             {
-                blocksX.Add(i);
-                blocksY.Add(y);
-                blockHitCount.Add(1);
+
+                blocks.Add(new Block(i, y, 1));
             }
         }
     }
     public void addLayer()
     {
         // create initial layer
-        if (blocksY.Count == 0)
+        if (blocks.Count == 0)
         {
-            blocksX.Add(0);
-            blocksY.Add(0);
-            blockHitCount.Add(1);
+            blocks.Add(new Block(0, 0, 1));
 
-            blocksX.Add(620);
-            blocksY.Add(0);
-            blockHitCount.Add(1);
+            blocks.Add(new Block(620, 0, 1));
 
             totalPoints++;
         }
         // create new layer
-        else if (blocksY[blocksY.Count - 2] > 100 && blocksY[blocksY.Count - 1] > 100)
+        else if (blocks[blocks.Count - 2].getY() > 100 && blocks[blocks.Count - 1].getY() > 100)
         {
             Random rand = new Random();
             int bound = rand.Next(0, (int)Resolution.X);
@@ -255,16 +246,13 @@ class Game
 
             for (int i = 0; i < bound; i += 20)
             {
-                blocksX.Add(i);
-                blocksY.Add(0);
-                blockHitCount.Add(1);
+
+                blocks.Add(new Block(i, 0, 1));
             }
 
             for (int i = bound + 60; i <= Resolution.X; i += 20)
             {
-                blocksX.Add(i);
-                blocksY.Add(0);
-                blockHitCount.Add(1);
+                blocks.Add(new Block(i, 0, 1));
             }
 
             totalPoints++;
@@ -294,28 +282,26 @@ class Game
     {
         Bounds2 spritePosition = new Bounds2(new Vector2(player.xPos, player.yPos), new Vector2(13, 30));
 
-        for (int i = 0; i < blocksX.Count; i++)
+        for (int i = 0; i < blocks.Count; i++)
         {
-            Bounds2 floorBounds = new Bounds2(new Vector2(blocksX[i], blocksY[i]), new Vector2(20, 20));
+            Bounds2 floorBounds = new Bounds2(new Vector2(blocks[i].getX(), blocks[i].getY()), new Vector2(20, 20));
             if (spritePosition.Overlaps(floorBounds))
             {
                 playerVelocity = 0;
                 //correct the y - error
-                if (player.yPos + 12 <= blocksY[i] - 30)
+                if (player.yPos + 12 <= blocks[i].getY() - 30)
                 {
                     return false;
                 }
-                else if (player.yPos > blocksY[i])
+                else if (player.yPos > blocks[i].getY())
                 {
                     player.yPos += 10;
-                    blockHitCount[i] = 0;
+                    blocks[i].blockHit();
                 }
 
-                if (blockHitCount[i] == 0)
+                if (blocks[i].getBlockHp() == 0)
                 {
-                    blocksX.RemoveAt(i);
-                    blocksY.RemoveAt(i);
-                    blockHitCount.RemoveAt(i);
+                    blocks.RemoveAt(i);
 
                     //lose points for breaking a block rather than going through the hole.
                     totalPoints -= 4;
@@ -370,7 +356,7 @@ class Game
         int bound = rand.Next(0, (int)Resolution.X);
 
         trinketX.Add(bound);
-        trinketY.Add(blocksY[blocksY.Count - 1] - 30);
+        trinketY.Add(blocks[blocks.Count - 1].getY() - 30);
     }
 
 
