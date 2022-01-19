@@ -31,10 +31,12 @@ class Game
     //amount of time block needs to be hit before breaking
     List<int> blockHitCount = new List<int>();
 
-
-   
-
-
+    //Non-enemy obsticle
+    Texture obsticleSkin1 = Engine.LoadTexture("Spike.png");
+    List<int> obsticleX = new List<int>();
+    List<int> obsticleY = new List<int>();
+    List<Texture> obsticleImage = new List<Texture>();
+    
     //bonus trinkets
     readonly Texture trinketSkin = Engine.LoadTexture("eastern_orthodox_cross.png");
     List<int> trinketX = new List<int>();
@@ -95,10 +97,16 @@ class Game
             //draw levels
             for (int i = 0; i < blocksX.Count; i++)
             {
-
                 Vector2 vec = new Vector2(blocksX[i], blocksY[i]);
                 Engine.DrawTexture(_block, vec, null, new Vector2(spriteSizeX, spriteSizeY));
 
+            }
+
+            //draw obsticles
+            for (int i = 0; i < obsticleX.Count; i++) 
+            {
+                Vector2 vec = new Vector2(obsticleX[i], obsticleY[i]);
+                Engine.DrawTexture(obsticleImage[i], vec, null, new Vector2(obsticleImage[i].Size.X / 100, obsticleImage[i].Size.Y / 100));
             }
 
             //if statement inside addLayer to see if a layer sould be added
@@ -347,10 +355,15 @@ class Game
 
     public void createNonEnemyObsticles() 
     {
-        
+        Random rand = new Random();
+        int bound = rand.Next(0, (int)Resolution.X);
+
+        obsticleX.Add(bound);
+        obsticleY.Add(blocksY[blocksY.Count - 1] - 30);
+        obsticleImage.Add(obsticleSkin1);
     }
-    
-  
+
+
 
 
 }
