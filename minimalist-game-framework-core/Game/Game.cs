@@ -18,6 +18,7 @@ class Game
     Player player = new Player();
     float playerVelocity = 0f;
     float maxVelocity = 5f;
+    float origVelocity = 0f;
 
     Enemy enemy1 = new Enemy();
     Boolean enemy1OnScreen = false;
@@ -67,16 +68,6 @@ class Game
 
         //Engine.DrawTexture(_sprite, new Vector2(spriteX, spriteY), null, new Vector2(20, 25));
 
-        if (Engine.GetKeyHeld(Key.Left))
-        {
-            player.left();
-        }
-
-        if (Engine.GetKeyHeld(Key.Right))
-        {
-            player.right();
-        }
-
         if (Engine.GetKeyDown(Key.X))
         {
             player.yPos = 350;
@@ -92,13 +83,39 @@ class Game
         }
 
         bool isInRange = false;
+        bool canMoveRight = true;
+        bool canMoveLeft = true;
+        //Bounds2 playerRight = new Bounds2(player.getVectorPos(), new Vector2(13, 7));
+        //Bounds2 playerLeft = new Bounds2(new Vector2(player.xPos - 7, player.yPos), new Vector2(13, 7));
+        Bounds2 playerBound = new Bounds2(new Vector2(player.xPos - 2, player.yPos + 2), new Vector2(17, 26));
         for (int i = 0; i < blocks.Count; i++)
         {
             if (blocks[i].getY() < player.yPos + 33f && blocks[i].getY() > player.yPos + 27f)
             {
                 isInRange = true;
                 player.yPos = blocks[i].getY() - 30f;
-                break;
+                //origVelocity = 0;
+                //break;
+            }
+
+            Block currentBlock = blocks[i];
+            Bounds2 blockBounds = new Bounds2(currentBlock.getLocation(), new Vector2(20, 25));
+            if(playerBound.Overlaps(blockBounds))
+            {
+                if(player.xPos >= currentBlock.getX() + 20)
+                {
+                    canMoveLeft = false;
+                    isInRange = false;
+                    player.xPos = currentBlock.getX() + 22;
+                    i = blocks.Count + 1;
+                }
+                if(player.xPos + 13 <= currentBlock.getX())
+                {
+                    canMoveRight = false;
+                    isInRange = false;
+                    player.xPos = currentBlock.getX() - 15;
+                    i = blocks.Count + 1;
+                }
             }
         }
 
@@ -107,11 +124,13 @@ class Game
         if (isInRange && playerVelocity <= 0 && playerIsOverlapping())
         {
             stopMoving = true;
+            origVelocity = 0;
         }
 
         if (Engine.GetKeyDown(Key.Up) && isInRange && stopMoving)
         {
             playerVelocity = maxVelocity;
+            origVelocity = maxVelocity;
             player.up(playerVelocity);
             generate = true;
         }
@@ -120,6 +139,20 @@ class Game
         {
             player.up(playerVelocity);
             playerVelocity -= 0.1f;
+        }
+
+        bool horizontalMove = origVelocity == 0 && !playerIsOverlapping();
+        if (!horizontalMove)
+        {
+            if (Engine.GetKeyHeld(Key.Left) && canMoveLeft)
+            {
+                player.left();
+            }
+
+            if (Engine.GetKeyHeld(Key.Right) && canMoveRight)
+            {
+                player.right();
+            }
         }
 
         if (player.yPos > Resolution.Y / 2 - 3 && player.yPos < Resolution.Y / 2 + 3 && generate)
