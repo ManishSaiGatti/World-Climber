@@ -32,6 +32,9 @@ class Game
     List<int> blockHitCount = new List<int>();
 
 
+   
+
+
     //bonus trinkets
     readonly Texture trinketSkin = Engine.LoadTexture("eastern_orthodox_cross.png");
     List<int> trinketX = new List<int>();
@@ -341,6 +344,11 @@ class Game
         trinketY.Add(blocksY[blocksY.Count - 1] - 30);        
     }
 
+
+    public void createNonEnemyObsticles() 
+    {
+        
+    }
     
   
 
