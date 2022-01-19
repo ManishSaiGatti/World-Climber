@@ -49,7 +49,17 @@ class Game
     Boolean gameOver = false;
 
     bool generate = false;
-
+    //screens
+    readonly Texture intro = Engine.LoadTexture("1.png");
+    readonly Texture introHover = Engine.LoadTexture("2.png");
+    readonly Texture end = Engine.LoadTexture("4.png");
+    readonly Texture endHover = Engine.LoadTexture("5.png");
+    //mouse for starting game
+    int mX = (int)Engine.MousePosition.X;
+    int mY = (int)Engine.MousePosition.Y;
+    // check if start
+    Boolean start = true;
+    Boolean play = false;
     public Game()
     {
         addInitialLayers();
@@ -57,162 +67,184 @@ class Game
 
     public void Update()
     {
-        Engine.DrawTexture(_background, Vector2.Zero);
-        Engine.DrawTexture(player.getTexture(), player.getVectorPos());
-
-        if (playerHitsBorders())
+        mX = (int)Engine.MousePosition.X;
+        mY = (int)Engine.MousePosition.Y;
+        if (start)
         {
-            Engine.DrawString("HITTING BORDERS", new Vector2(10, 440), Color.Red, font);
+            // checking if intro screen should be displayed
+            Engine.DrawTexture(intro, Vector2.Zero);
         }
-
-
-
-        //draw levels
-        for (int i = 0; i < blocksX.Count; i++)
+        if (mX > 95 && mX < 542 && mY > 306 && mY < 350 && start)
         {
-
-            Vector2 vec = new Vector2(blocksX[i], blocksY[i]);
-            Engine.DrawTexture(_block, vec, null, new Vector2(spriteSizeX, spriteSizeY));
-
-        }
-
-        //if statement inside addLayer to see if a layer sould be added
-        addLayer();
-
-        //Engine.DrawTexture(_sprite, new Vector2(spriteX, spriteY), null, new Vector2(20, 25));
-
-        if (Engine.GetKeyHeld(Key.Left))
-        {
-            player.left();
-        }
-
-        if (Engine.GetKeyHeld(Key.Right))
-        {
-            player.right();
-        }
-
-        if (Engine.GetKeyDown(Key.X))
-        {
-            player.yPos = 350;
-        }
-
-        if (player.xPos < -13)
-        {
-            player.xPos = 640;
-        }
-        if (player.xPos > 640)
-        {
-            player.xPos = -13;
-        }
-
-        bool isInRange = false;
-        for (int i = 0; i < blocksY.Count; i++)
-        {
-            if (blocksY[i] < player.yPos + 33f && blocksY[i] > player.yPos + 27f)
+            Engine.DrawTexture(introHover, Vector2.Zero);
+            if (Engine.GetMouseButtonDown(MouseButton.Left)) 
             {
-                isInRange = true;
-                player.yPos = blocksY[i] - 30f;
-                break;
+                //changing to green while hovering and starting game if clicked
+                start = false;
+                play = true;
             }
         }
+        if (play) { 
+            Engine.DrawTexture(_background, Vector2.Zero);
+            Engine.DrawTexture(player.getTexture(), player.getVectorPos());
 
-        bool stopMoving = false;
-        if (isInRange && playerVelocity <= 0 && playerIsOverlapping())
-        {
-            stopMoving = true;
-        }
+            if (playerHitsBorders())
+            {
+                Engine.DrawString("HITTING BORDERS", new Vector2(10, 440), Color.Red, font);
+            }
 
-        if (Engine.GetKeyDown(Key.Up) && isInRange && stopMoving)
-        {
-            playerVelocity = maxVelocity;
-            player.up(playerVelocity);
-            generate = true;
-        }
 
-        if (!stopMoving)
-        {
-            player.up(playerVelocity);
-            playerVelocity -= 0.1f;
-        }
 
-        if (player.yPos > Resolution.Y / 2 - 3 && player.yPos < Resolution.Y / 2 + 3 && generate)
-        {
+            //draw levels
+            for (int i = 0; i < blocksX.Count; i++)
+            {
+
+                Vector2 vec = new Vector2(blocksX[i], blocksY[i]);
+                Engine.DrawTexture(_block, vec, null, new Vector2(spriteSizeX, spriteSizeY));
+
+            }
+
+            //if statement inside addLayer to see if a layer sould be added
+            addLayer();
+
+            //Engine.DrawTexture(_sprite, new Vector2(spriteX, spriteY), null, new Vector2(20, 25));
+
+            if (Engine.GetKeyHeld(Key.Left))
+            {
+                player.left();
+            }
+
+            if (Engine.GetKeyHeld(Key.Right))
+            {
+                player.right();
+            }
+
+            if (Engine.GetKeyDown(Key.X))
+            {
+                player.yPos = 350;
+            }
+
+            if (player.xPos < -13)
+            {
+                player.xPos = 640;
+            }
+            if (player.xPos > 640)
+            {
+                player.xPos = -13;
+            }
+
+            bool isInRange = false;
             for (int i = 0; i < blocksY.Count; i++)
             {
-                blocksY[i] = blocksY[i] + 30;
+                if (blocksY[i] < player.yPos + 33f && blocksY[i] > player.yPos + 27f)
+                {
+                    isInRange = true;
+                    player.yPos = blocksY[i] - 30f;
+                    break;
+                }
             }
 
-            //fixing the trinkets
-            for (int i = 0; i < trinketY.Count; i++)
+            bool stopMoving = false;
+            if (isInRange && playerVelocity <= 0 && playerIsOverlapping())
             {
-                trinketY[i] = trinketY[i] + 30;
+                stopMoving = true;
             }
 
-            player.yPos += 20;
+            if (Engine.GetKeyDown(Key.Up) && isInRange && stopMoving)
+            {
+                playerVelocity = maxVelocity;
+                player.up(playerVelocity);
+                generate = true;
+            }
+
+            if (!stopMoving)
+            {
+                player.up(playerVelocity);
+                playerVelocity -= 0.1f;
+            }
+
+            if (player.yPos > Resolution.Y / 2 - 3 && player.yPos < Resolution.Y / 2 + 3 && generate)
+            {
+                for (int i = 0; i < blocksY.Count; i++)
+                {
+                    blocksY[i] = blocksY[i] + 30;
+                }
+
+                //fixing the trinkets
+                for (int i = 0; i < trinketY.Count; i++)
+                {
+                    trinketY[i] = trinketY[i] + 30;
+                }
+
+                player.yPos += 20;
+
+                if (enemy1OnScreen)
+                {
+                    enemy1.setEnemyY(enemy1.getEnemyY() + 30);
+
+                }
+            }
 
             if (enemy1OnScreen)
             {
-                enemy1.setEnemyY(enemy1.getEnemyY() + 30);
+
+                enemy1.drawEnemy();
+                if (!enemy1MoveLeft)
+                {
+                    enemy1.setEnemyX(enemy1.getEnemyX() + 1);
+                    if (enemy1.getEnemyX() == enemy1.getInitialX())
+                    {
+                        enemy1MoveLeft = true;
+                    }
+                }
+                else if (enemy1MoveLeft)
+                {
+                    enemy1.setEnemyX(enemy1.getEnemyX() - 1);
+                    if (enemy1.getEnemyX() < enemy1.getInitialX() - 50)
+                    {
+                        enemy1MoveLeft = false;
+                    }
+                }
 
             }
-        }
-
-        if (enemy1OnScreen)
-        {
-
-            enemy1.drawEnemy();
-            if (!enemy1MoveLeft)
+            if (playerIsOverlapping())
             {
-                enemy1.setEnemyX(enemy1.getEnemyX() + 1);
-                if (enemy1.getEnemyX() == enemy1.getInitialX())
+                Engine.DrawString("OVERLAPPING", new Vector2(10, 440), Color.Red, font);
+            }
+
+            //displaying the number of points
+            Engine.DrawString(totalPoints.ToString(), new Vector2(440, 440), Color.Red, font);
+
+
+            //trinket code
+
+            //draw all the trinkets
+            for (int i = 0; i < trinketX.Count; i++)
+            {
+                Vector2 vec = new Vector2(trinketX[i], trinketY[i]);
+                Engine.DrawTexture(trinketSkin, vec, null, new Vector2(trinketSizeX, trinketSizeY));
+
+            }
+
+            //collect trinkets
+            for (int i = 0; i < trinketX.Count; i++)
+            {
+                Bounds2 trinketBounds = new Bounds2(trinketX[i], trinketY[i], trinketSizeX, trinketSizeY);
+
+                Bounds2 playerBounds = new Bounds2(player.xPos, player.yPos, 13, 30);
+
+                if (playerBounds.Overlaps(trinketBounds))
                 {
-                    enemy1MoveLeft = true;
+                    trinketX.RemoveAt(i);
+                    trinketY.RemoveAt(i);
+                    totalPoints += 50;
                 }
             }
-            else if (enemy1MoveLeft)
-            {
-                enemy1.setEnemyX(enemy1.getEnemyX() - 1);
-                if (enemy1.getEnemyX() < enemy1.getInitialX() - 50)
-                {
-                    enemy1MoveLeft = false;
-                }
-            }
-
         }
-        if (playerIsOverlapping())
+        if (gameOver == true)
         {
-            Engine.DrawString("OVERLAPPING", new Vector2(10, 440), Color.Red, font);
+            Engine.DrawTexture(end, Vector2.Zero);
         }
-
-        //displaying the number of points
-        Engine.DrawString(totalPoints.ToString(), new Vector2(440, 440), Color.Red, font);
-
-
-        //trinket code
-
-        //draw all the trinkets
-        for (int i = 0; i < trinketX.Count; i++)
-        {
-            Vector2 vec = new Vector2(trinketX[i], trinketY[i]);
-            Engine.DrawTexture(trinketSkin, vec, null, new Vector2(trinketSizeX, trinketSizeY));
-
-        }
-
-        //collect trinkets
-        for (int i = 0; i < trinketX.Count; i++)
-        {
-            Bounds2 trinketBounds = new Bounds2(trinketX[i], trinketY[i], trinketSizeX, trinketSizeY);
-
-            Bounds2 playerBounds = new Bounds2(player.xPos, player.yPos, 13, 30);
-
-            if (playerBounds.Overlaps(trinketBounds))
-            {
-                trinketX.RemoveAt(i);
-                trinketY.RemoveAt(i);
-                totalPoints += 50;
-            }
-        }
-
     }
 
     public void addInitialLayers()
@@ -325,9 +357,10 @@ class Game
         }
         Bounds2 enemyBounds = new Bounds2(new Vector2(enemy1.getEnemyX(), enemy1.getEnemyY())
             , new Vector2(29, 29));
-        if (spritePosition.Overlaps(enemyBounds))
+        if (spritePosition.Overlaps(enemyBounds) || player.yPos >480)
         {
             gameOver = true;
+            play = false;
             totalPoints = -1;
         }
 
