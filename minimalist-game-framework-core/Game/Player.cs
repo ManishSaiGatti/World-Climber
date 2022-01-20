@@ -27,12 +27,12 @@ class Player
 
     public void right()
     {
-        xPos += 5;
+        xPos += 3;
     }
 
     public void left()
     {
-        xPos -= 5;
+        xPos -= 3;
     }
 
     public void up(float amount)

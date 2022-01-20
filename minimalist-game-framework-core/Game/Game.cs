@@ -86,7 +86,7 @@ class Game
         {
             Engine.DrawTexture(endHover, Vector2.Zero);
         }
-        if (play) 
+        if (play)
         {
             Engine.DrawTexture(_background, Vector2.Zero);
             Engine.DrawTexture(player.getTexture(), player.getVectorPos());
@@ -124,18 +124,25 @@ class Game
             //Bounds2 playerRight = new Bounds2(player.getVectorPos(), new Vector2(13, 7));
             //Bounds2 playerLeft = new Bounds2(new Vector2(player.xPos - 7, player.yPos), new Vector2(13, 7));
             Bounds2 playerBound = new Bounds2(new Vector2(player.xPos - 2, player.yPos + 2), new Vector2(17, 26));
+            Bounds2 playerBottomBound = new Bounds2(new Vector2(player.xPos, player.yPos + 25), new Vector2(13, 5));
             for (int i = 0; i < blocks.Count; i++)
             {
-                if (blocks[i].getY() < player.yPos + 33f && blocks[i].getY() > player.yPos + 27f)
-                {
-                    isInRange = true;
-                    player.yPos = blocks[i].getY() - 30f;
-                    //origVelocity = 0;
-                    //break;
-                }
+                //if (blocks[i].getY() < player.yPos + 33f && blocks[i].getY() > player.yPos + 27f)
+                //{
+                //    isInRange = true;
+                //    player.yPos = blocks[i].getY() - 30f;
+                //    //origVelocity = 0;
+                //    //break;
+                //}
 
                 Block currentBlock = blocks[i];
                 Bounds2 blockBounds = new Bounds2(currentBlock.getLocation(), new Vector2(20, 25));
+                if (playerBottomBound.Overlaps(blockBounds))
+                {
+                    isInRange = true;
+                    player.yPos = blocks[i].getY() - 30f;
+                }
+
                 if (playerBound.Overlaps(blockBounds))
                 {
                     if (player.xPos >= currentBlock.getX() + 20)
@@ -377,8 +384,8 @@ class Game
         }
         Bounds2 enemyBounds = new Bounds2(new Vector2(enemy1.getEnemyX(), enemy1.getEnemyY())
             , new Vector2(29, 29));
-        if (spritePosition.Overlaps(enemyBounds) || player.yPos>480)
-        {            
+        if (spritePosition.Overlaps(enemyBounds) || player.yPos > 480)
+        {
             gameOver = true;
             play = false;
             endSc = true;
