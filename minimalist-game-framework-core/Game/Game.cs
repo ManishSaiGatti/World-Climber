@@ -138,7 +138,7 @@ class Game
         if (!stopMoving)
         {
             player.up(playerVelocity);
-            playerVelocity -= 0.1f;
+            playerVelocity -= .1f;
         }
 
         bool horizontalMove = origVelocity == 0 && !playerIsOverlapping();
