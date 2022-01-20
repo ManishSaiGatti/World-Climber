@@ -106,8 +106,20 @@ class Game
             for (int i = 0; i < obsticleX.Count; i++) 
             {
                 Vector2 vec = new Vector2(obsticleX[i], obsticleY[i]);
-                Engine.DrawTexture(obsticleImage[i], vec, null, new Vector2(obsticleImage[i].Size.X / 100, obsticleImage[i].Size.Y / 100));
+                Engine.DrawTexture(obsticleImage[i], vec, null, new Vector2(obsticleImage[i].Size.X / 20, obsticleImage[i].Size.Y / 25));
             }
+
+            for (int i = 0; i < obsticleX.Count; i++) 
+            {
+                Bounds2 spikeBounds= new Bounds2(obsticleX[i], obsticleY[i], obsticleImage[i].Size.X / 20, obsticleImage[i].Size.Y / 25);
+                Bounds2 playerBounds = new Bounds2(spriteX, spriteY, spriteSizeX, spriteSizeY);
+
+                if (playerBounds.Overlaps(spikeBounds))
+                {
+                    totalPoints = 0;
+                }
+            }
+
 
             //if statement inside addLayer to see if a layer sould be added
             addLayer();
@@ -142,6 +154,12 @@ class Game
                 for (int i = 0; i < trinketY.Count; i++)
                 {
                     trinketY[i] = trinketY[i] + 10;
+                }
+
+                //adjust the y of obstcles
+                for (int i = 0; i < obsticleY.Count; i++) 
+                {
+                    obsticleY[i] = obsticleY[i] + 10;
                 }
 
                 spriteY += 20;
@@ -263,6 +281,7 @@ class Game
             totalPoints++;
 
             createTrinket();
+            createNonEnemyObsticles();
 
             int[] intervalOfGap = { bound, bound + 40 };
 
@@ -352,14 +371,13 @@ class Game
         trinketY.Add(blocksY[blocksY.Count - 1] - 30);        
     }
 
-
     public void createNonEnemyObsticles() 
     {
         Random rand = new Random();
         int bound = rand.Next(0, (int)Resolution.X);
 
         obsticleX.Add(bound);
-        obsticleY.Add(blocksY[blocksY.Count - 1] - 30);
+        obsticleY.Add(blocksY[blocksY.Count - 1] - (int)obsticleSkin1.Size.Y/25 );
         obsticleImage.Add(obsticleSkin1);
     }
 
