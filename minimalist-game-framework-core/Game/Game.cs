@@ -60,6 +60,7 @@ class Game
     public Game()
     {
         addInitialLayers();
+        player.yPos = 400;
     }
 
     public void Update()
@@ -128,14 +129,6 @@ class Game
             Bounds2 playerBottomBound = new Bounds2(new Vector2(player.xPos, player.yPos + 25), new Vector2(13, 5));
             for (int i = 0; i < blocks.Count; i++)
             {
-                //if (blocks[i].getY() < player.yPos + 33f && blocks[i].getY() > player.yPos + 27f)
-                //{
-                //    isInRange = true;
-                //    player.yPos = blocks[i].getY() - 30f;
-                //    //origVelocity = 0;
-                //    //break;
-                //}
-
                 Block currentBlock = blocks[i];
                 Bounds2 blockBounds = new Bounds2(currentBlock.getLocation(), new Vector2(20, 25));
                 if (playerBottomBound.Overlaps(blockBounds))
@@ -149,20 +142,20 @@ class Game
                     if (player.xPos >= currentBlock.getX() + 20)
                     {
                         canMoveLeft = false;
-                        isInRange = false;
+                        isInRange = true;
                         player.xPos = currentBlock.getX() + 22;
                         i = blocks.Count + 1;
                     }
+
                     if (player.xPos + 13 <= currentBlock.getX())
                     {
                         canMoveRight = false;
-                        isInRange = false;
-                        player.xPos = currentBlock.getX() - 15;
+                        isInRange = true;
+                        player.xPos = currentBlock.getX() - 17;
                         i = blocks.Count + 1;
                     }
                 }
             }
-
 
             bool stopMoving = false;
             if (isInRange && playerVelocity <= 0 && playerIsOverlapping())
@@ -293,7 +286,7 @@ class Game
 
     public void addInitialLayers()
     {
-        for (int y = 0; y < (int)Resolution.Y; y += 100)
+        for (int y = 0; y < (int)Resolution.Y; y += 110)
         {
             for (int i = 0; i <= Resolution.X; i += 20)
             {
