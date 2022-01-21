@@ -139,23 +139,23 @@ class Game
 
                 if (playerBound.Overlaps(blockBounds))
                 {
-                    if (player.xPos + 13 <= currentBlock.getX())
-                    {
-                        canMoveRight = false;
-                        isInRange = false;
-                        //player.xPos = currentBlock.getX() - 15;
-                        i = blocks.Count + 1;
-                    }
                     if (player.xPos >= currentBlock.getX() + 20)
                     {
                         canMoveLeft = false;
-                        isInRange = false;
-                        //player.xPos = currentBlock.getX() + 22;
+                        isInRange = true;
+                        player.xPos = currentBlock.getX() + 22;
+                        i = blocks.Count + 1;
+                    }
+
+                    if (player.xPos + 13 <= currentBlock.getX())
+                    {
+                        canMoveRight = false;
+                        isInRange = true;
+                        player.xPos = currentBlock.getX() - 17;
                         i = blocks.Count + 1;
                     }
                 }
             }
-
 
             bool stopMoving = false;
             if (isInRange && playerVelocity <= 0 && playerIsOverlapping())
@@ -196,10 +196,7 @@ class Game
             {
                 for (int i = 0; i < blocks.Count; i++)
                 {
-                    for (int j = 0; j < 30; j++)
-                    {
-                        blocks[i].changeY(blocks[i].getY() + 1);
-                    }
+                    blocks[i].changeY(blocks[i].getY() + 30);
                 }
 
                 //fixing the trinkets

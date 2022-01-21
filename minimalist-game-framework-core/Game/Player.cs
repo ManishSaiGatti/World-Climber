@@ -4,8 +4,9 @@ using System.Text;
 
 class Player
 {
-    //public Texture texture = Engine.LoadTexture("png");
-    private Texture texture = Engine.LoadTexture("pickaxeSprite2.png");
+    private Texture texture = Engine.LoadTexture("pickaxeSpriteRight.png");
+    private Texture leftTexture = Engine.LoadTexture("pickaxeSpriteLeft.png");
+    private Texture rightTexture = Engine.LoadTexture("pickaxeSpriteRight.png");
 
     public float xPos = 240;
     public float yPos = 350;
@@ -28,12 +29,14 @@ class Player
     public void right()
     {
         xPos += 3;
-    }
+        texture = leftTexture;
+}
 
     public void left()
     {
         xPos -= 3;
-    }
+        texture = rightTexture;
+}
 
     public void up(float amount)
     {
