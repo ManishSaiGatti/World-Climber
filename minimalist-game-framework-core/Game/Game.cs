@@ -102,7 +102,8 @@ class Game
             //if statement inside addLayer to see if a layer sould be added
             addLayer();
 
-
+            // check if game is Over
+            checkGameEnd();
 
             //Engine.DrawTexture(_sprite, new Vector2(spriteX, spriteY), null, new Vector2(20, 25));
 
@@ -382,6 +383,16 @@ class Game
                 return true;
             }
         }
+        
+        
+
+
+        return false;
+    }
+
+    public bool checkGameEnd()
+    {
+        Bounds2 spritePosition = new Bounds2(new Vector2(player.xPos, player.yPos), new Vector2(13, 30));
         Bounds2 enemyBounds = new Bounds2(new Vector2(enemy1.getEnemyX(), enemy1.getEnemyY())
             , new Vector2(29, 29));
         if (spritePosition.Overlaps(enemyBounds) || player.yPos > 480)
@@ -390,12 +401,10 @@ class Game
             play = false;
             endSc = true;
             totalPoints = -1;
+            return true;
         }
-
-
         return false;
     }
-
     public bool GameOverByGoingOutsideOfBorders()
     {
         gameOver = true;
