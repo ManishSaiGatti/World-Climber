@@ -65,6 +65,7 @@ class Game
 
     public void Update()
     {
+        
         mX = (int)Engine.MousePosition.X;
         Engine.DrawString(Engine.MouseMotion.X.ToString(), Vector2.Zero, Color.Black, font);
         mY = (int)Engine.MousePosition.Y;
@@ -277,6 +278,12 @@ class Game
         {
             endSc = true;
             Engine.DrawTexture(end, Vector2.Zero);
+        }
+      //  Engine.DrawString(endSc.ToString(), Vector2.Zero, Color.White, font);
+        if (mX > 157 && mX < 488 && mY > 210 && mY < 241 && endSc)
+        {
+            Engine.DrawTexture(endHover, Vector2.Zero);
+            Engine.DrawString(mY.ToString(), Vector2.Zero, Color.White, font);
         }
     }
 
