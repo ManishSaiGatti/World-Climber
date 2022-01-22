@@ -152,7 +152,7 @@ class Game
                     {
                         canMoveRight = false;
                         isInRange = true;
-                        player.xPos = currentBlock.getX() - 17;
+                        player.xPos = currentBlock.getX() - 15;
                         i = blocks.Count + 1;
                     }
                 }
@@ -177,6 +177,7 @@ class Game
             {
                 player.up(playerVelocity);
                 playerVelocity -= 0.1f;
+                origVelocity = playerVelocity;
             }
 
             bool horizontalMove = origVelocity == 0 && !playerIsOverlapping();
