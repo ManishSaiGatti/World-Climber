@@ -37,7 +37,7 @@ class Game
     readonly Texture trinketSkin = Engine.LoadTexture("star.png");
     List<int> trinketX = new List<int>();
     List<int> trinketY = new List<int>();
-    int trinketSizeX = 20;
+    int trinketSizeX = 30;
     int trinketSizeY = 30;
 
     int totalPoints = 0;
@@ -60,6 +60,9 @@ class Game
 
 
     int biome = 0;
+    // sand = -960
+    // ice = -1420
+    // space -3040
     float sandCheck = -960;
     float iceCheck = -1420;
     float spaceCheck = -3040;
