@@ -64,7 +64,7 @@ class Game
     // ice = -1420
     // space -3040
     float sandCheck = -960;
-    float iceCheck = -1320;
+    float iceCheck = -1300;
     float spaceCheck = -2800;
 
     float underSandY = -960;
