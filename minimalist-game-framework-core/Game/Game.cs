@@ -34,10 +34,10 @@ class Game
 
 
     //bonus trinkets
-    readonly Texture trinketSkin = Engine.LoadTexture("eastern_orthodox_cross.png");
+    readonly Texture trinketSkin = Engine.LoadTexture("star.png");
     List<int> trinketX = new List<int>();
     List<int> trinketY = new List<int>();
-    int trinketSizeX = 20;
+    int trinketSizeX = 30;
     int trinketSizeY = 30;
 
     int totalPoints = 0;
@@ -57,15 +57,109 @@ class Game
     Boolean start = true;
     Boolean play = false;
     Boolean endSc = false;
+
+
+    int biome = 0;
+    // sand = -960
+    // ice = -1420
+    // space -3040
+    float sandCheck = -960;
+    float iceCheck = -1420;
+    float spaceCheck = -3040;
+
+    float underSandY = -960;
+    float iceSpaceY = -2880;
+
+    float scrollValue = 0;
+
+    float spaceBack1Y = -3840;
+    float spaceBack2Y = -4320;
+
+    bool seeDebug = false;
+
+    readonly Texture floorUnder = Engine.LoadTexture("undergroundFloor.png");
+    readonly Texture floorSand = Engine.LoadTexture("sandFloor.png");
+    readonly Texture floorIce = Engine.LoadTexture("iceFloor.png");
+    readonly Texture floorSpace = Engine.LoadTexture("spaceFloor.png");
+    readonly Texture underBack = Engine.LoadTexture("UndergroundBack.png");
+    readonly Texture sandBack = Engine.LoadTexture("SandBack.png");
+    readonly Texture iceBack = Engine.LoadTexture("IceBack.png");
+    readonly Texture spaceBack = Engine.LoadTexture("SpaceBack.png");
+    readonly Texture spaceBlack1 = Engine.LoadTexture("spaceBlack.png");
+    readonly Texture spaceBlack2 = Engine.LoadTexture("spaceBlack.png");
+    readonly Texture underSand = Engine.LoadTexture("underSand.png");
+    readonly Texture iceSpace = Engine.LoadTexture("iceSpace.png");
+
+
+
+
+
+
     public Game()
     {
         addInitialLayers();
         player.yPos = 400;
     }
+    public Texture biomeFloor()
+    {
+        if (biome == 0)
+        {
+            return floorUnder;
+        }
+        if (biome == 2)
+        {
+            return floorIce;
+        }
+        if (biome == 1)
+        {
+            return floorSand;
+        }
+
+        return floorSpace;
+    }
 
     public void Update()
     {
-        
+        if (sandCheck >= player.yPos)
+        {
+            if (biome == 0)
+            {
+                biome = 1;
+            }
+        }
+        if (iceCheck >= player.yPos)
+        {
+            if (biome == 1)
+            {
+                biome = 2;
+            }
+        }
+        if (spaceCheck >= player.yPos)
+        {
+            if (biome == 2)
+            {
+                biome = 3;
+            }
+        }
+
+        Engine.DrawTexture(underBack, new Vector2(0, 0 + scrollValue));
+        Engine.DrawTexture(underSand, new Vector2(0, underSandY));
+        Engine.DrawTexture(sandBack, new Vector2(0, -1440 + scrollValue));
+        Engine.DrawTexture(iceBack, new Vector2(0, -1920 + scrollValue));
+        Engine.DrawTexture(iceSpace, new Vector2(0, iceSpaceY));
+        Engine.DrawTexture(spaceBack, new Vector2(0, -3360 + scrollValue));
+        Engine.DrawTexture(spaceBlack1, new Vector2(0, spaceBack1Y));
+        Engine.DrawTexture(spaceBlack2, new Vector2(0, spaceBack2Y));
+
+        if (spaceBack1Y >= 480)
+        {
+            spaceBack1Y = -480;
+        }
+        if (spaceBack2Y >= 480)
+        {
+            spaceBack2Y = -480;
+        }
+
         mX = (int)Engine.MousePosition.X;
         Engine.DrawString(Engine.MouseMotion.X.ToString(), Vector2.Zero, Color.Black, font);
         mY = (int)Engine.MousePosition.Y;
@@ -90,13 +184,13 @@ class Game
         }
         if (play)
         {
-            Engine.DrawTexture(_background, Vector2.Zero);
+            //Engine.DrawTexture(_background, Vector2.Zero);
             Engine.DrawTexture(player.getTexture(), player.getVectorPos());
 
             //draw levels
             for (int i = 0; i < blocks.Count; i++)
             {
-                blocks[i].drawBlock();
+                blocks[i].drawBlock(biomeFloor());
             }
 
             //if statement inside addLayer to see if a layer sould be added
@@ -214,6 +308,16 @@ class Game
                     enemy1.setEnemyY(enemy1.getEnemyY() + 30);
 
                 }
+
+                scrollValue += 10f;
+                spaceBack1Y += 10f;
+                spaceBack2Y += 10f;
+                underSandY += 10f;
+                iceSpaceY += 10f;
+
+                sandCheck += 10f;
+                iceCheck += 10f;
+                spaceCheck += 10f;
             }
 
             if (enemy1OnScreen)
@@ -272,18 +376,40 @@ class Game
                     totalPoints += 50;
                 }
             }
+            if (Engine.GetKeyDown(Key.F3))
+            {
+                if (seeDebug)
+                {
+                    seeDebug = false;
+                }
+                else if (!seeDebug)
+                {
+                    seeDebug = true;
+                }
+            }
+            if (seeDebug)
+            {
+                Engine.DrawString("yPos: " + player.yPos, new Vector2(50, 300), Color.AliceBlue, font);
+                Engine.DrawString("sandCh: " + sandCheck, new Vector2(50, 100), Color.AliceBlue, font);
+                Engine.DrawString("iceCh: " + iceCheck, new Vector2(50, 150), Color.AliceBlue, font);
+                Engine.DrawString("spaceCh: " + spaceCheck, new Vector2(50, 200), Color.AliceBlue, font);
+                Engine.DrawString("biome: " + biome, new Vector2(50, 250), Color.AliceBlue, font);
+                Engine.DrawString("Debug: ", new Vector2(50, 50), Color.AliceBlue, font);
+            }
+
         }
         if (gameOver == true)
         {
             endSc = true;
             Engine.DrawTexture(end, Vector2.Zero);
         }
-      //  Engine.DrawString(endSc.ToString(), Vector2.Zero, Color.White, font);
+        //  Engine.DrawString(endSc.ToString(), Vector2.Zero, Color.White, font);
         if (mX > 157 && mX < 488 && mY > 210 && mY < 241 && endSc)
         {
             Engine.DrawTexture(endHover, Vector2.Zero);
             Engine.DrawString(mY.ToString(), Vector2.Zero, Color.White, font);
         }
+        
     }
 
     public void addInitialLayers()
