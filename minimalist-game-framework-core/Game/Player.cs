@@ -29,13 +29,13 @@ class Player
     public void right()
     {
         xPos += 3;
-        texture = leftTexture;
+        texture = rightTexture;
 }
 
     public void left()
     {
         xPos -= 3;
-        texture = rightTexture;
+        texture = leftTexture;
 }
 
     public void up(float amount)
