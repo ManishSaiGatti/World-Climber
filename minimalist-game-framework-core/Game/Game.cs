@@ -90,8 +90,7 @@ class Game
     readonly Texture underSand = Engine.LoadTexture("underSand.png");
     readonly Texture iceSpace = Engine.LoadTexture("iceSpace.png");
 
-
-
+    readonly Sound coinCollect = Engine.LoadSound("CollectCoinSound.wav");
 
 
 
@@ -371,6 +370,7 @@ class Game
 
                 if (playerBounds.Overlaps(trinketBounds))
                 {
+                    Engine.PlaySound(coinCollect);
                     trinketX.RemoveAt(i);
                     trinketY.RemoveAt(i);
                     totalPoints += 50;
@@ -537,7 +537,7 @@ class Game
         gameOver = true;
         if (player.yPos + blockSizeY > (int)Resolution.Y)
         {
-            endSc = true; ;
+            endSc = true;
             play = false;
             return true;
         }
