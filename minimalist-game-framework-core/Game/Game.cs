@@ -107,6 +107,23 @@ class Game
 
     public Game()
     {
+
+        if (!File.Exists("HighScore.txt"))
+        {
+            // Create a file to write to.
+            using (StreamWriter sw = File.CreateText("HighScore.txt")) {
+                sw.WriteLine("0");
+            }
+        }
+        using (StreamReader sr = File.OpenText("HighScore.txt"))
+        {
+            string s = "";
+            while ((s = sr.ReadLine()) != null)
+            {
+                Console.WriteLine(s);
+            }
+        }
+        highScore = Int32.Parse(File.ReadAllText("HighScore.txt"));
         Engine.PlayMusic(backMusic);
         addInitialLayers();
         player.yPos = 400;
@@ -430,20 +447,22 @@ class Game
             Engine.DrawTexture(end, Vector2.Zero);
             if (!highScoreUpdate)
             {
-                highScore = Int32.Parse(File.ReadAllText("HighScore.txt"));
+
+                
                 if (File.ReadAllText("HighScore.txt").Equals(""))
                 {
-                    highScore = totalPoints;
-                    File.WriteAllTextAsync("HighScore.txt", totalPoints.ToString());
+                        highScore = totalPoints;
+                        File.WriteAllTextAsync("HighScore.txt", totalPoints.ToString());
                 }
-                else if ( highScore < totalPoints)
+                else if (highScore < totalPoints)
                 {
                     highScore = totalPoints;
                     File.WriteAllText("HighScore.txt", String.Empty);
                     File.WriteAllTextAsync("HighScore.txt", totalPoints.ToString());
-                    
+
                 }
                 highScoreUpdate = true;
+
             }
             Engine.DrawString("High Score: " + highScore.ToString(), Vector2.Zero, Color.White, font);
         }
@@ -614,6 +633,5 @@ class Game
         timeLeft -= 1;
     }
 
-
-
+    
 }
