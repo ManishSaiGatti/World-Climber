@@ -1,6 +1,7 @@
 ﻿
 using System;
 using System.Collections.Generic;
+using System.IO;
 
 class Game
 {
@@ -29,6 +30,7 @@ class Game
     int blockSizeX = 20;
     int blockSizeY = 25;
 
+    bool highScoreUpdate = false;
 
     readonly Texture _block = Engine.LoadTexture("square.png");
 
@@ -43,6 +45,7 @@ class Game
     int trinketSizeY = 30;
 
     int totalPoints = 0;
+    int highScore = 0;
 
     Boolean gameOver = false;
 
@@ -425,14 +428,34 @@ class Game
         {
             endSc = true;
             Engine.DrawTexture(end, Vector2.Zero);
+            if (!highScoreUpdate)
+            {
+                highScore = Int32.Parse(File.ReadAllText("HighScore.txt"));
+                if (File.ReadAllText("HighScore.txt").Equals(""))
+                {
+                    highScore = totalPoints;
+                    File.WriteAllTextAsync("HighScore.txt", totalPoints.ToString());
+                }
+                else if ( highScore < totalPoints)
+                {
+                    highScore = totalPoints;
+                    File.WriteAllText("HighScore.txt", String.Empty);
+                    File.WriteAllTextAsync("HighScore.txt", totalPoints.ToString());
+                    
+                }
+                highScoreUpdate = true;
+            }
+            Engine.DrawString("High Score: " + highScore.ToString(), Vector2.Zero, Color.White, font);
         }
         //  Engine.DrawString(endSc.ToString(), Vector2.Zero, Color.White, font);
         if (mX > 157 && mX < 488 && mY > 210 && mY < 241 && endSc)
         {
             Engine.DrawTexture(endHover, Vector2.Zero);
-            Engine.DrawString(mY.ToString(), Vector2.Zero, Color.White, font);
+            Engine.DrawString("High Score: " + highScore.ToString(), Vector2.Zero, Color.White, font);
+
+
         }
-        
+
     }
 
     public void addInitialLayers()
@@ -455,7 +478,7 @@ class Game
 
             blocks.Add(new Block(620, 0, 1));
 
-            totalPoints++;
+            
         }
         // create new layer
         else if (blocks[blocks.Count - 2].getY() > 100 && blocks[blocks.Count - 1].getY() > 100)
@@ -555,7 +578,7 @@ class Game
             gameOver = true;
             play = false;
             endSc = true;
-            totalPoints = -1;
+            
             return true;
         }
         return false;
