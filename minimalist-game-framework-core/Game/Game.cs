@@ -97,13 +97,17 @@ class Game
     readonly Texture underSand = Engine.LoadTexture("underSand.png");
     readonly Texture iceSpace = Engine.LoadTexture("iceSpace.png");
 
+    readonly Sound coinCollect = Engine.LoadSound("CollectCoinSound.wav");
+    readonly Sound jump = Engine.LoadSound("jump.wav");
+    readonly Sound blockBreak = Engine.LoadSound("blockBreak.wav");
+    readonly Sound death = Engine.LoadSound("deathEffect.wav");
 
-
-
+    readonly Music backMusic = Engine.LoadMusic("My Song 4.wav");
 
 
     public Game()
     {
+
         if (!File.Exists("HighScore.txt"))
         {
             // Create a file to write to.
@@ -120,6 +124,7 @@ class Game
             }
         }
         highScore = Int32.Parse(File.ReadAllText("HighScore.txt"));
+        Engine.PlayMusic(backMusic);
         addInitialLayers();
         player.yPos = 400;
     }
@@ -192,6 +197,7 @@ class Game
         if (start)
         {
             // checking if intro screen should be displayed
+            //Console.WriteLine("start");
             Engine.DrawTexture(intro, Vector2.Zero);
         }
         if (mX > 95 && mX < 542 && mY > 306 && mY < 350 && start)
@@ -207,7 +213,6 @@ class Game
                 timer.Elapsed += OnTimedEvent;
                 timer.AutoReset = true;
                 timer.Enabled = true;
-                
             }
         }
         if (mX > 0 && mX < 640 && mY > 0 && mY < 480 && endSc)
@@ -216,7 +221,7 @@ class Game
         }
         if (play)
         {
-            
+            //Console.WriteLine("play");
             //Engine.DrawTexture(_background, Vector2.Zero);
             Engine.DrawTexture(player.getTexture(), player.getVectorPos());
 
@@ -270,7 +275,7 @@ class Game
                     if (player.xPos >= currentBlock.getX() + 20)
                     {
                         canMoveLeft = false;
-                        isInRange = true;
+                        isInRange = false;
                         player.xPos = currentBlock.getX() + 22;
                         i = blocks.Count + 1;
                     }
@@ -278,7 +283,7 @@ class Game
                     if (player.xPos + 13 <= currentBlock.getX())
                     {
                         canMoveRight = false;
-                        isInRange = true;
+                        isInRange = false;
                         player.xPos = currentBlock.getX() - 15;
                         i = blocks.Count + 1;
                     }
@@ -294,6 +299,7 @@ class Game
 
             if (Engine.GetKeyDown(Key.Up) && isInRange && stopMoving)
             {
+                Engine.PlaySound(jump);
                 playerVelocity = maxVelocity;
                 origVelocity = maxVelocity;
                 player.up(playerVelocity);
@@ -408,6 +414,7 @@ class Game
 
                 if (playerBounds.Overlaps(trinketBounds))
                 {
+                    Engine.PlaySound(coinCollect);
                     trinketX.RemoveAt(i);
                     trinketY.RemoveAt(i);
                     timeLeft += 5;
@@ -450,6 +457,7 @@ class Game
                 }
                 else if (highScore < totalPoints)
                 {
+                    //Console.WriteLine(highScore);
                     highScore = totalPoints;
                     File.WriteAllText("HighScore.txt", String.Empty);
                     File.WriteAllTextAsync("HighScore.txt", totalPoints.ToString());
@@ -465,8 +473,42 @@ class Game
         {
             Engine.DrawTexture(endHover, Vector2.Zero);
             Engine.DrawString("High Score: " + highScore.ToString(), Vector2.Zero, Color.White, font);
+            if(Engine.GetMouseButtonDown(MouseButton.Left))
+            {
+                //Console.WriteLine("end screen click");
+                gameOver = false;
+                endSc = false;
+                play = false;
+                start = true;
+                highScoreUpdate = false;
 
+                blocks.Clear();
+                trinketX.Clear();
+                trinketY.Clear();
+                enemy1 = new Enemy();
 
+                highScore = Int32.Parse(File.ReadAllText("HighScore.txt"));
+
+                addInitialLayers();
+                player.yPos = 400;
+                player.xPos = 240;
+
+                timer.Dispose();
+                timeLeft = 60;
+                totalPoints = 0;
+
+                biome = 0;
+                sandCheck = -960;
+                iceCheck = -1300;
+                spaceCheck = -2800;
+                underSandY = -960;
+                iceSpaceY = -2880;
+                scrollValue = 0;
+                spaceBack1Y = -3840;
+                spaceBack2Y = -4320;
+
+                Engine.PlayMusic(backMusic);
+            }
         }
 
     }
@@ -557,6 +599,7 @@ class Game
                 }
                 else if (player.yPos > blocks[i].getY())
                 {
+                    Engine.PlaySound(blockBreak);
                     player.yPos += 10;
                     blocks[i].blockHit();
                 }
@@ -585,6 +628,8 @@ class Game
             , new Vector2(29, 29));
         if (spritePosition.Overlaps(enemyBounds) || player.yPos > 480 || timeLeft == 0)
         {
+            Engine.StopMusic();
+            Engine.PlaySound(death);
             gameOver = true;
             play = false;
             endSc = true;
@@ -598,7 +643,9 @@ class Game
         gameOver = true;
         if (player.yPos + blockSizeY > (int)Resolution.Y)
         {
-            endSc = true; ;
+            Engine.StopMusic();
+            Engine.PlaySound(death);
+            endSc = true;
             play = false;
             return true;
         }
