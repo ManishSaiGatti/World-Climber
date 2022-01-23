@@ -97,13 +97,17 @@ class Game
     readonly Texture underSand = Engine.LoadTexture("underSand.png");
     readonly Texture iceSpace = Engine.LoadTexture("iceSpace.png");
 
+    readonly Sound coinCollect = Engine.LoadSound("CollectCoinSound.wav");
+    readonly Sound jump = Engine.LoadSound("jump.wav");
+    readonly Sound blockBreak = Engine.LoadSound("blockBreak.wav");
+    readonly Sound death = Engine.LoadSound("deathEffect.wav");
 
-
-
+    readonly Music backMusic = Engine.LoadMusic("My Song 4.wav");
 
 
     public Game()
     {
+
         if (!File.Exists("HighScore.txt"))
         {
             // Create a file to write to.
@@ -120,6 +124,7 @@ class Game
             }
         }
         highScore = Int32.Parse(File.ReadAllText("HighScore.txt"));
+        Engine.PlayMusic(backMusic);
         addInitialLayers();
         player.yPos = 400;
     }
@@ -294,6 +299,7 @@ class Game
 
             if (Engine.GetKeyDown(Key.Up) && isInRange && stopMoving)
             {
+                Engine.PlaySound(jump);
                 playerVelocity = maxVelocity;
                 origVelocity = maxVelocity;
                 player.up(playerVelocity);
@@ -407,6 +413,7 @@ class Game
 
                 if (playerBounds.Overlaps(trinketBounds))
                 {
+                    Engine.PlaySound(coinCollect);
                     trinketX.RemoveAt(i);
                     trinketY.RemoveAt(i);
                     timeLeft += 5;
@@ -556,6 +563,7 @@ class Game
                 }
                 else if (player.yPos > blocks[i].getY())
                 {
+                    Engine.PlaySound(blockBreak);
                     player.yPos += 10;
                     blocks[i].blockHit();
                 }
@@ -584,6 +592,8 @@ class Game
             , new Vector2(29, 29));
         if (spritePosition.Overlaps(enemyBounds) || player.yPos > 480 || timeLeft == 0)
         {
+            Engine.StopMusic();
+            Engine.PlaySound(death);
             gameOver = true;
             play = false;
             endSc = true;
@@ -597,7 +607,9 @@ class Game
         gameOver = true;
         if (player.yPos + blockSizeY > (int)Resolution.Y)
         {
-            endSc = true; ;
+            Engine.StopMusic();
+            Engine.PlaySound(death);
+            endSc = true;
             play = false;
             return true;
         }
