@@ -95,7 +95,9 @@ class Game
     readonly Texture iceSpace = Engine.LoadTexture("iceSpace.png");
 
     readonly Sound coinCollect = Engine.LoadSound("CollectCoinSound.wav");
-
+    readonly Sound jump = Engine.LoadSound("jump.wav");
+    readonly Sound blockBreak = Engine.LoadSound("blockBreak.wav");
+    readonly Sound death = Engine.LoadSound("deathEffect.wav");
 
 
     public Game()
@@ -274,6 +276,7 @@ class Game
 
             if (Engine.GetKeyDown(Key.Up) && isInRange && stopMoving)
             {
+                Engine.PlaySound(jump);
                 playerVelocity = maxVelocity;
                 origVelocity = maxVelocity;
                 player.up(playerVelocity);
@@ -515,6 +518,7 @@ class Game
                 }
                 else if (player.yPos > blocks[i].getY())
                 {
+                    Engine.PlaySound(blockBreak);
                     player.yPos += 10;
                     blocks[i].blockHit();
                 }
@@ -543,6 +547,7 @@ class Game
             , new Vector2(29, 29));
         if (spritePosition.Overlaps(enemyBounds) || player.yPos > 480 || timeLeft == 0)
         {
+            Engine.PlaySound(death);
             gameOver = true;
             play = false;
             endSc = true;
@@ -556,6 +561,7 @@ class Game
         gameOver = true;
         if (player.yPos + blockSizeY > (int)Resolution.Y)
         {
+            Engine.PlaySound(death);
             endSc = true;
             play = false;
             return true;
