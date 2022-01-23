@@ -252,7 +252,7 @@ class Game
                     if (player.xPos >= currentBlock.getX() + 20)
                     {
                         canMoveLeft = false;
-                        isInRange = true;
+                        isInRange = false;
                         player.xPos = currentBlock.getX() + 22;
                         i = blocks.Count + 1;
                     }
@@ -260,7 +260,7 @@ class Game
                     if (player.xPos + 13 <= currentBlock.getX())
                     {
                         canMoveRight = false;
-                        isInRange = true;
+                        isInRange = false;
                         player.xPos = currentBlock.getX() - 15;
                         i = blocks.Count + 1;
                     }
