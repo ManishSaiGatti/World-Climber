@@ -385,8 +385,9 @@ class Game
             Engine.DrawString(totalPoints.ToString(), new Vector2(Resolution.X - 50, 0), Color.Black, font);
 
             // displaying current time left
-            Engine.DrawTexture(whiteSpace, new Vector2(-170, -5));
-            Engine.DrawString(timeLeft.ToString(), new Vector2(0, 0), Color.Black, font);
+            Engine.DrawTexture(whiteSpace, new Vector2(-120, -5));
+            Engine.DrawString("Time: " +timeLeft.ToString(), new Vector2(0, 0), Color.Black, font);
+
 
             //trinket code
 
