@@ -1,4 +1,5 @@
-﻿using System;
+﻿
+using System;
 using System.Collections.Generic;
 
 class Game
@@ -10,7 +11,8 @@ class Game
 
     readonly Texture _sprite = Engine.LoadTexture("player.png");
 
-    readonly Font font = Engine.LoadFont("OpenSans-Regular.ttf", 10);
+    readonly Font font = Engine.LoadFont("OpenSans-Regular.ttf", 20);
+    readonly Texture whiteSpace = Engine.LoadTexture("whiteSpace.png");
 
     readonly Texture prizeSkin = Engine.LoadTexture("eastern_orthodox_cross.png");
 
@@ -58,6 +60,8 @@ class Game
     Boolean play = false;
     Boolean endSc = false;
 
+    private System.Timers.Timer timer;
+    int timeLeft = 60;
 
     int biome = 0;
     // sand = -960
@@ -124,6 +128,7 @@ class Game
             if (biome == 0)
             {
                 biome = 1;
+                timeLeft += 20;
             }
         }
         if (iceCheck >= player.yPos)
@@ -131,6 +136,7 @@ class Game
             if (biome == 1)
             {
                 biome = 2;
+                timeLeft += 20;
             }
         }
         if (spaceCheck >= player.yPos)
@@ -138,6 +144,7 @@ class Game
             if (biome == 2)
             {
                 biome = 3;
+                timeLeft += 20;
             }
         }
 
@@ -160,7 +167,7 @@ class Game
         }
 
         mX = (int)Engine.MousePosition.X;
-        Engine.DrawString(Engine.MouseMotion.X.ToString(), Vector2.Zero, Color.Black, font);
+        //Engine.DrawString(Engine.MouseMotion.X.ToString(), Vector2.Zero, Color.Black, font);
         mY = (int)Engine.MousePosition.Y;
         if (start)
         {
@@ -175,6 +182,12 @@ class Game
                 //changing to green while hovering and starting game if clicked
                 start = false;
                 play = true;
+                // set up timer
+                timer = new System.Timers.Timer(1000);
+                timer.Elapsed += OnTimedEvent;
+                timer.AutoReset = true;
+                timer.Enabled = true;
+                
             }
         }
         if (mX > 0 && mX < 640 && mY > 0 && mY < 480 && endSc)
@@ -183,6 +196,7 @@ class Game
         }
         if (play)
         {
+            
             //Engine.DrawTexture(_background, Vector2.Zero);
             Engine.DrawTexture(player.getTexture(), player.getVectorPos());
 
@@ -342,14 +356,17 @@ class Game
 
             }
 
-            if (playerIsOverlapping())
-            {
-                Engine.DrawString("OVERLAPPING", new Vector2(10, 440), Color.Red, font);
-            }
+            playerIsOverlapping();
+
 
             //displaying the number of points
-            Engine.DrawString(totalPoints.ToString(), new Vector2(Resolution.X - 10, 10), Color.Red, font);
+            Engine.DrawTexture(whiteSpace, new Vector2(Resolution.X - 50, -5));
 
+            Engine.DrawString(totalPoints.ToString(), new Vector2(Resolution.X - 50, 0), Color.Black, font);
+
+            // displaying current time left
+            Engine.DrawTexture(whiteSpace, new Vector2(-170, -5));
+            Engine.DrawString(timeLeft.ToString(), new Vector2(0, 0), Color.Black, font);
 
             //trinket code
 
@@ -373,7 +390,7 @@ class Game
                     Engine.PlaySound(coinCollect);
                     trinketX.RemoveAt(i);
                     trinketY.RemoveAt(i);
-                    totalPoints += 50;
+                    timeLeft += 5;
                 }
             }
             if (Engine.GetKeyDown(Key.F3))
@@ -448,12 +465,12 @@ class Game
             for (int i = 0; i < bound; i += 20)
             {
 
-                blocks.Add(new Block(i, 0, 1));
+                blocks.Add(new Block(i, 0, biome + 1));
             }
 
             for (int i = bound + 60; i <= Resolution.X; i += 20)
             {
-                blocks.Add(new Block(i, 0, 1));
+                blocks.Add(new Block(i, 0, biome + 1));
             }
 
             totalPoints++;
@@ -471,8 +488,10 @@ class Game
 
 
 
-
-            createTrinket();
+            if (rand.Next(1, 4) == 1)
+            {
+                createTrinket();
+            }
 
         }
 
@@ -505,7 +524,7 @@ class Game
                     blocks.RemoveAt(i);
 
                     //lose points for breaking a block rather than going through the hole.
-                    totalPoints -= 4;
+                    //totalPoints -= 4;
                 }
                 return true;
             }
@@ -522,7 +541,7 @@ class Game
         Bounds2 spritePosition = new Bounds2(new Vector2(player.xPos, player.yPos), new Vector2(13, 30));
         Bounds2 enemyBounds = new Bounds2(new Vector2(enemy1.getEnemyX(), enemy1.getEnemyY())
             , new Vector2(29, 29));
-        if (spritePosition.Overlaps(enemyBounds) || player.yPos > 480)
+        if (spritePosition.Overlaps(enemyBounds) || player.yPos > 480 || timeLeft == 0)
         {
             gameOver = true;
             play = false;
@@ -556,7 +575,10 @@ class Game
         trinketY.Add(blocks[blocks.Count - 1].getY() - 30);
     }
 
-
+    public void OnTimedEvent(Object source, System.Timers.ElapsedEventArgs e)
+    {
+        timeLeft -= 1;
+    }
 
 
 
