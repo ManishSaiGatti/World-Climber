@@ -99,9 +99,12 @@ class Game
     readonly Sound blockBreak = Engine.LoadSound("blockBreak.wav");
     readonly Sound death = Engine.LoadSound("deathEffect.wav");
 
+    readonly Music backMusic = Engine.LoadMusic("My Song 4.wav");
+
 
     public Game()
     {
+        Engine.PlayMusic(backMusic);
         addInitialLayers();
         player.yPos = 400;
     }
@@ -547,6 +550,7 @@ class Game
             , new Vector2(29, 29));
         if (spritePosition.Overlaps(enemyBounds) || player.yPos > 480 || timeLeft == 0)
         {
+            Engine.StopMusic();
             Engine.PlaySound(death);
             gameOver = true;
             play = false;
@@ -561,6 +565,7 @@ class Game
         gameOver = true;
         if (player.yPos + blockSizeY > (int)Resolution.Y)
         {
+            Engine.StopMusic();
             Engine.PlaySound(death);
             endSc = true;
             play = false;
