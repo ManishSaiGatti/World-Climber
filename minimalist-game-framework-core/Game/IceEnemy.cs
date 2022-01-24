@@ -7,7 +7,7 @@ class IceEnemy : Enemy
     Player player;
     public IceEnemy(Player player)
     {
-        enemyTexture = Engine.LoadResizableTexture("11.svg", 0, 0, 0, 0);
+        enemyTexture = Engine.LoadResizableTexture("11.png", 0, 0, 0, 0);
         this.player = player;
     }
 

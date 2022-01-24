@@ -8,7 +8,7 @@ class SpaceEnemy : Enemy
     Player player;
     public SpaceEnemy(Player player)
     {
-        enemyTexture = enemyTexture = Engine.LoadResizableTexture("13.svg", 0, 0, 0, 0);
+        enemyTexture = enemyTexture = Engine.LoadResizableTexture("13.png", 0, 0, 0, 0);
         this.player = player;
     }
     public override void enemyAct()
