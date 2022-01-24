@@ -52,9 +52,9 @@ class Block
         blockLocation = new Vector2(blockX, y);
     }
 
-    public void drawBlock()
+    public void drawBlock(Texture texture)
     {
-        Engine.DrawTexture(_block, blockLocation, null, blockSize);
+        Engine.DrawTexture(texture, blockLocation, null, blockSize);
     }
 
     public void blockHit()

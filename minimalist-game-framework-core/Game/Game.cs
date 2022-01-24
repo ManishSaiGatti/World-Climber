@@ -1,5 +1,7 @@
-﻿using System;
+﻿
+using System;
 using System.Collections.Generic;
+using System.IO;
 
 class Game
 {
@@ -10,7 +12,8 @@ class Game
 
     readonly Texture _sprite = Engine.LoadTexture("player.png");
 
-    readonly Font font = Engine.LoadFont("OpenSans-Regular.ttf", 10);
+    readonly Font font = Engine.LoadFont("OpenSans-Regular.ttf", 20);
+    readonly Texture whiteSpace = Engine.LoadTexture("whiteSpace.png");
 
     readonly Texture prizeSkin = Engine.LoadTexture("eastern_orthodox_cross.png");
 
@@ -18,6 +21,7 @@ class Game
     Player player = new Player();
     float playerVelocity = 0f;
     float maxVelocity = 5f;
+    float origVelocity = 0f;
 
     Enemy enemy1 = new Enemy();
     Boolean enemy1OnScreen = false;
@@ -26,6 +30,7 @@ class Game
     int blockSizeX = 20;
     int blockSizeY = 25;
 
+    bool highScoreUpdate = false;
 
     readonly Texture _block = Engine.LoadTexture("square.png");
 
@@ -33,40 +38,166 @@ class Game
 
 
     //bonus trinkets
-    readonly Texture trinketSkin = Engine.LoadTexture("eastern_orthodox_cross.png");
+    readonly Texture trinketSkin = Engine.LoadTexture("star.png");
     List<int> trinketX = new List<int>();
     List<int> trinketY = new List<int>();
-    int trinketSizeX = 20;
+    int trinketSizeX = 30;
     int trinketSizeY = 30;
 
     int totalPoints = 0;
+    int highScore = 0;
 
     Boolean gameOver = false;
 
     bool generate = false;
-    readonly Texture intro = Engine.LoadTexture("1.png");
-    readonly Texture introHover = Engine.LoadTexture("2.png");
-    readonly Texture end = Engine.LoadTexture("4.png");
-    readonly Texture endHover = Engine.LoadTexture("5.png");
+
+    readonly Texture intro = Engine.LoadTexture("n1.png");
+    readonly Texture introHover = Engine.LoadTexture("n2.png");
+    readonly Texture end = Engine.LoadTexture("n4.png");
+    readonly Texture endHover = Engine.LoadTexture("n5.png");
     //mouse for starting game
     int mX = (int)Engine.MousePosition.X;
     int mY = (int)Engine.MousePosition.Y;
     // check if start
     Boolean start = true;
     Boolean play = false;
+    Boolean endSc = false;
+
+    private System.Timers.Timer timer;
+    int timeLeft = 60;
+
+    int biome = 0;
+    // sand = -960
+    // ice = -1420
+    // space -3040
+    float sandCheck = -960;
+    float iceCheck = -1300;
+    float spaceCheck = -2800;
+
+    float underSandY = -960;
+    float iceSpaceY = -2880;
+
+    float scrollValue = 0;
+
+    float spaceBack1Y = -3840;
+    float spaceBack2Y = -4320;
+
+    bool seeDebug = false;
+
+    readonly Texture floorUnder = Engine.LoadTexture("undergroundFloor.png");
+    readonly Texture floorSand = Engine.LoadTexture("sandFloor.png");
+    readonly Texture floorIce = Engine.LoadTexture("iceFloor.png");
+    readonly Texture floorSpace = Engine.LoadTexture("spaceFloor.png");
+    readonly Texture underBack = Engine.LoadTexture("UndergroundBack.png");
+    readonly Texture sandBack = Engine.LoadTexture("SandBack.png");
+    readonly Texture iceBack = Engine.LoadTexture("IceBack.png");
+    readonly Texture spaceBack = Engine.LoadTexture("SpaceBack.png");
+    readonly Texture spaceBlack1 = Engine.LoadTexture("spaceBlack.png");
+    readonly Texture spaceBlack2 = Engine.LoadTexture("spaceBlack.png");
+    readonly Texture underSand = Engine.LoadTexture("underSand.png");
+    readonly Texture iceSpace = Engine.LoadTexture("iceSpace.png");
+
+    readonly Sound coinCollect = Engine.LoadSound("CollectCoinSound.wav");
+    readonly Sound jump = Engine.LoadSound("jump.wav");
+    readonly Sound blockBreak = Engine.LoadSound("blockBreak.wav");
+    readonly Sound death = Engine.LoadSound("deathEffect.wav");
+
+    readonly Music backMusic = Engine.LoadMusic("My Song 4.wav");
+
 
     public Game()
     {
+
+        if (!File.Exists("HighScore.txt"))
+        {
+            // Create a file to write to.
+            using (StreamWriter sw = File.CreateText("HighScore.txt")) {
+                sw.WriteLine("0");
+            }
+        }
+        using (StreamReader sr = File.OpenText("HighScore.txt"))
+        {
+            string s = "";
+            while ((s = sr.ReadLine()) != null)
+            {
+                Console.WriteLine(s);
+            }
+        }
+        highScore = Int32.Parse(File.ReadAllText("HighScore.txt"));
+        Engine.PlayMusic(backMusic);
         addInitialLayers();
+        player.yPos = 400;
+    }
+    public Texture biomeFloor()
+    {
+        if (biome == 0)
+        {
+            return floorUnder;
+        }
+        if (biome == 2)
+        {
+            return floorIce;
+        }
+        if (biome == 1)
+        {
+            return floorSand;
+        }
+
+        return floorSpace;
     }
 
     public void Update()
     {
+        if (sandCheck >= player.yPos)
+        {
+            if (biome == 0)
+            {
+                biome = 1;
+                timeLeft += 20;
+            }
+        }
+        if (iceCheck >= player.yPos)
+        {
+            if (biome == 1)
+            {
+                biome = 2;
+                timeLeft += 20;
+            }
+        }
+        if (spaceCheck >= player.yPos)
+        {
+            if (biome == 2)
+            {
+                biome = 3;
+                timeLeft += 20;
+            }
+        }
+
+        Engine.DrawTexture(underBack, new Vector2(0, 0 + scrollValue));
+        Engine.DrawTexture(underSand, new Vector2(0, underSandY));
+        Engine.DrawTexture(sandBack, new Vector2(0, -1440 + scrollValue));
+        Engine.DrawTexture(iceBack, new Vector2(0, -1920 + scrollValue));
+        Engine.DrawTexture(iceSpace, new Vector2(0, iceSpaceY));
+        Engine.DrawTexture(spaceBack, new Vector2(0, -3360 + scrollValue));
+        Engine.DrawTexture(spaceBlack1, new Vector2(0, spaceBack1Y));
+        Engine.DrawTexture(spaceBlack2, new Vector2(0, spaceBack2Y));
+
+        if (spaceBack1Y >= 480)
+        {
+            spaceBack1Y = -480;
+        }
+        if (spaceBack2Y >= 480)
+        {
+            spaceBack2Y = -480;
+        }
+
         mX = (int)Engine.MousePosition.X;
+        //Engine.DrawString(Engine.MouseMotion.X.ToString(), Vector2.Zero, Color.Black, font);
         mY = (int)Engine.MousePosition.Y;
         if (start)
         {
             // checking if intro screen should be displayed
+            //Console.WriteLine("start");
             Engine.DrawTexture(intro, Vector2.Zero);
         }
         if (mX > 95 && mX < 542 && mY > 306 && mY < 350 && start)
@@ -77,33 +208,36 @@ class Game
                 //changing to green while hovering and starting game if clicked
                 start = false;
                 play = true;
+                // set up timer
+                timer = new System.Timers.Timer(1000);
+                timer.Elapsed += OnTimedEvent;
+                timer.AutoReset = true;
+                timer.Enabled = true;
             }
         }
-        if (play) 
+        if (mX > 0 && mX < 640 && mY > 0 && mY < 480 && endSc)
         {
-            Engine.DrawTexture(_background, Vector2.Zero);
+            Engine.DrawTexture(endHover, Vector2.Zero);
+        }
+        if (play)
+        {
+            //Console.WriteLine("play");
+            //Engine.DrawTexture(_background, Vector2.Zero);
             Engine.DrawTexture(player.getTexture(), player.getVectorPos());
 
             //draw levels
             for (int i = 0; i < blocks.Count; i++)
             {
-                blocks[i].drawBlock();
+                blocks[i].drawBlock(biomeFloor());
             }
 
             //if statement inside addLayer to see if a layer sould be added
             addLayer();
 
+            // check if game is Over
+            checkGameEnd();
+
             //Engine.DrawTexture(_sprite, new Vector2(spriteX, spriteY), null, new Vector2(20, 25));
-
-            if (Engine.GetKeyHeld(Key.Left))
-            {
-                player.left();
-            }
-
-            if (Engine.GetKeyHeld(Key.Right))
-            {
-                player.right();
-            }
 
             if (Engine.GetKeyDown(Key.X))
             {
@@ -120,26 +254,54 @@ class Game
             }
 
             bool isInRange = false;
+            bool canMoveRight = true;
+            bool canMoveLeft = true;
+            //Bounds2 playerRight = new Bounds2(player.getVectorPos(), new Vector2(13, 7));
+            //Bounds2 playerLeft = new Bounds2(new Vector2(player.xPos - 7, player.yPos), new Vector2(13, 7));
+            Bounds2 playerBound = new Bounds2(new Vector2(player.xPos - 2, player.yPos + 2), new Vector2(17, 26));
+            Bounds2 playerBottomBound = new Bounds2(new Vector2(player.xPos, player.yPos + 25), new Vector2(13, 5));
             for (int i = 0; i < blocks.Count; i++)
             {
-                if (blocks[i].getY() < player.yPos + 33f && blocks[i].getY() > player.yPos + 27f)
+                Block currentBlock = blocks[i];
+                Bounds2 blockBounds = new Bounds2(currentBlock.getLocation(), new Vector2(20, 25));
+                if (playerBottomBound.Overlaps(blockBounds))
                 {
                     isInRange = true;
                     player.yPos = blocks[i].getY() - 30f;
-                    break;
+                }
+
+                if (playerBound.Overlaps(blockBounds))
+                {
+                    if (player.xPos >= currentBlock.getX() + 20)
+                    {
+                        canMoveLeft = false;
+                        isInRange = false;
+                        player.xPos = currentBlock.getX() + 22;
+                        i = blocks.Count + 1;
+                    }
+
+                    if (player.xPos + 13 <= currentBlock.getX())
+                    {
+                        canMoveRight = false;
+                        isInRange = false;
+                        player.xPos = currentBlock.getX() - 15;
+                        i = blocks.Count + 1;
+                    }
                 }
             }
-
 
             bool stopMoving = false;
             if (isInRange && playerVelocity <= 0 && playerIsOverlapping())
             {
                 stopMoving = true;
+                origVelocity = 0;
             }
 
             if (Engine.GetKeyDown(Key.Up) && isInRange && stopMoving)
             {
+                Engine.PlaySound(jump);
                 playerVelocity = maxVelocity;
+                origVelocity = maxVelocity;
                 player.up(playerVelocity);
                 generate = true;
             }
@@ -148,6 +310,21 @@ class Game
             {
                 player.up(playerVelocity);
                 playerVelocity -= 0.1f;
+                origVelocity = playerVelocity;
+            }
+
+            bool horizontalMove = origVelocity == 0 && !playerIsOverlapping();
+            if (!horizontalMove)
+            {
+                if (Engine.GetKeyHeld(Key.Left) && canMoveLeft)
+                {
+                    player.left();
+                }
+
+                if (Engine.GetKeyHeld(Key.Right) && canMoveRight)
+                {
+                    player.right();
+                }
             }
 
             if (player.yPos > Resolution.Y / 2 - 3 && player.yPos < Resolution.Y / 2 + 3 && generate)
@@ -170,6 +347,16 @@ class Game
                     enemy1.setEnemyY(enemy1.getEnemyY() + 30);
 
                 }
+
+                scrollValue += 10f;
+                spaceBack1Y += 10f;
+                spaceBack2Y += 10f;
+                underSandY += 10f;
+                iceSpaceY += 10f;
+
+                sandCheck += 10f;
+                iceCheck += 10f;
+                spaceCheck += 10f;
             }
 
             if (enemy1OnScreen)
@@ -195,14 +382,17 @@ class Game
 
             }
 
-            if (playerIsOverlapping())
-            {
-                Engine.DrawString("OVERLAPPING", new Vector2(10, 440), Color.Red, font);
-            }
+            playerIsOverlapping();
+
 
             //displaying the number of points
-            Engine.DrawString(totalPoints.ToString(), new Vector2(Resolution.X - 10, 10), Color.Red, font);
+            Engine.DrawTexture(whiteSpace, new Vector2(Resolution.X - 50, -5));
 
+            Engine.DrawString(totalPoints.ToString(), new Vector2(Resolution.X - 50, 0), Color.Black, font);
+
+            // displaying current time left
+            Engine.DrawTexture(whiteSpace, new Vector2(-170, -5));
+            Engine.DrawString(timeLeft.ToString(), new Vector2(0, 0), Color.Black, font);
 
             //trinket code
 
@@ -223,21 +413,108 @@ class Game
 
                 if (playerBounds.Overlaps(trinketBounds))
                 {
+                    Engine.PlaySound(coinCollect);
                     trinketX.RemoveAt(i);
                     trinketY.RemoveAt(i);
-                    totalPoints += 50;
+                    timeLeft += 5;
                 }
             }
+            if (Engine.GetKeyDown(Key.F3))
+            {
+                if (seeDebug)
+                {
+                    seeDebug = false;
+                }
+                else if (!seeDebug)
+                {
+                    seeDebug = true;
+                }
+            }
+            if (seeDebug)
+            {
+                Engine.DrawString("yPos: " + player.yPos, new Vector2(50, 300), Color.AliceBlue, font);
+                Engine.DrawString("sandCh: " + sandCheck, new Vector2(50, 100), Color.AliceBlue, font);
+                Engine.DrawString("iceCh: " + iceCheck, new Vector2(50, 150), Color.AliceBlue, font);
+                Engine.DrawString("spaceCh: " + spaceCheck, new Vector2(50, 200), Color.AliceBlue, font);
+                Engine.DrawString("biome: " + biome, new Vector2(50, 250), Color.AliceBlue, font);
+                Engine.DrawString("Debug: ", new Vector2(50, 50), Color.AliceBlue, font);
+            }
+
         }
         if (gameOver == true)
         {
+            endSc = true;
             Engine.DrawTexture(end, Vector2.Zero);
+            if (!highScoreUpdate)
+            {
+
+                
+                if (File.ReadAllText("HighScore.txt").Equals(""))
+                {
+                        highScore = totalPoints;
+                        File.WriteAllTextAsync("HighScore.txt", totalPoints.ToString());
+                }
+                else if (highScore < totalPoints)
+                {
+                    //Console.WriteLine(highScore);
+                    highScore = totalPoints;
+                    File.WriteAllText("HighScore.txt", String.Empty);
+                    File.WriteAllTextAsync("HighScore.txt", totalPoints.ToString());
+
+                }
+                highScoreUpdate = true;
+
+            }
+            Engine.DrawString("High Score: " + highScore.ToString(), Vector2.Zero, Color.White, font);
         }
+        //  Engine.DrawString(endSc.ToString(), Vector2.Zero, Color.White, font);
+        if (mX > 157 && mX < 488 && mY > 210 && mY < 241 && endSc)
+        {
+            Engine.DrawTexture(endHover, Vector2.Zero);
+            Engine.DrawString("High Score: " + highScore.ToString(), Vector2.Zero, Color.White, font);
+            if(Engine.GetMouseButtonDown(MouseButton.Left))
+            {
+                //Console.WriteLine("end screen click");
+                gameOver = false;
+                endSc = false;
+                play = false;
+                start = true;
+                highScoreUpdate = false;
+
+                blocks.Clear();
+                trinketX.Clear();
+                trinketY.Clear();
+                enemy1 = new Enemy();
+
+                highScore = Int32.Parse(File.ReadAllText("HighScore.txt"));
+
+                addInitialLayers();
+                player.yPos = 400;
+                player.xPos = 240;
+
+                timer.Dispose();
+                timeLeft = 60;
+                totalPoints = 0;
+
+                biome = 0;
+                sandCheck = -960;
+                iceCheck = -1300;
+                spaceCheck = -2800;
+                underSandY = -960;
+                iceSpaceY = -2880;
+                scrollValue = 0;
+                spaceBack1Y = -3840;
+                spaceBack2Y = -4320;
+
+                Engine.PlayMusic(backMusic);
+            }
+        }
+
     }
 
     public void addInitialLayers()
     {
-        for (int y = 0; y < (int)Resolution.Y; y += 100)
+        for (int y = 0; y < (int)Resolution.Y; y += 110)
         {
             for (int i = 0; i <= Resolution.X; i += 20)
             {
@@ -255,7 +532,7 @@ class Game
 
             blocks.Add(new Block(620, 0, 1));
 
-            totalPoints++;
+            
         }
         // create new layer
         else if (blocks[blocks.Count - 2].getY() > 100 && blocks[blocks.Count - 1].getY() > 100)
@@ -271,12 +548,12 @@ class Game
             for (int i = 0; i < bound; i += 20)
             {
 
-                blocks.Add(new Block(i, 0, 1));
+                blocks.Add(new Block(i, 0, biome + 1));
             }
 
             for (int i = bound + 60; i <= Resolution.X; i += 20)
             {
-                blocks.Add(new Block(i, 0, 1));
+                blocks.Add(new Block(i, 0, biome + 1));
             }
 
             totalPoints++;
@@ -294,8 +571,10 @@ class Game
 
 
 
-
-            createTrinket();
+            if (rand.Next(1, 4) == 1)
+            {
+                createTrinket();
+            }
 
         }
 
@@ -319,6 +598,7 @@ class Game
                 }
                 else if (player.yPos > blocks[i].getY())
                 {
+                    Engine.PlaySound(blockBreak);
                     player.yPos += 10;
                     blocks[i].blockHit();
                 }
@@ -328,29 +608,44 @@ class Game
                     blocks.RemoveAt(i);
 
                     //lose points for breaking a block rather than going through the hole.
-                    totalPoints -= 4;
+                    //totalPoints -= 4;
                 }
                 return true;
             }
         }
-        Bounds2 enemyBounds = new Bounds2(new Vector2(enemy1.getEnemyX(), enemy1.getEnemyY())
-            , new Vector2(29, 29));
-        if (spritePosition.Overlaps(enemyBounds) || player.yPos>480)
-        {            
-            gameOver = true;
-            play = false;
-            totalPoints = -1;
-        }
+        
+        
 
 
         return false;
     }
 
+    public bool checkGameEnd()
+    {
+        Bounds2 spritePosition = new Bounds2(new Vector2(player.xPos, player.yPos), new Vector2(13, 30));
+        Bounds2 enemyBounds = new Bounds2(new Vector2(enemy1.getEnemyX(), enemy1.getEnemyY())
+            , new Vector2(29, 29));
+        if (spritePosition.Overlaps(enemyBounds) || player.yPos > 480 || timeLeft == 0)
+        {
+            Engine.StopMusic();
+            Engine.PlaySound(death);
+            gameOver = true;
+            play = false;
+            endSc = true;
+            
+            return true;
+        }
+        return false;
+    }
     public bool GameOverByGoingOutsideOfBorders()
     {
         gameOver = true;
         if (player.yPos + blockSizeY > (int)Resolution.Y)
         {
+            Engine.StopMusic();
+            Engine.PlaySound(death);
+            endSc = true;
+            play = false;
             return true;
         }
 
@@ -368,8 +663,10 @@ class Game
         trinketY.Add(blocks[blocks.Count - 1].getY() - 30);
     }
 
+    public void OnTimedEvent(Object source, System.Timers.ElapsedEventArgs e)
+    {
+        timeLeft -= 1;
+    }
 
-
-
-
+    
 }
