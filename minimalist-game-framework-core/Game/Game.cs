@@ -544,12 +544,12 @@ class Game
             for (int i = 0; i < bound; i += 20)
             {
 
-                blocks.Add(new Block(i, 0, biome + 1));
+                blocks.Add(new Block(i, 0, 1));
             }
 
             for (int i = bound + 60; i <= Resolution.X; i += 20)
             {
-                blocks.Add(new Block(i, 0, biome + 1));
+                blocks.Add(new Block(i, 0, 1));
             }
 
             totalPoints++;
