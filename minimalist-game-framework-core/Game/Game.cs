@@ -51,10 +51,10 @@ class Game
 
     bool generate = false;
 
-    readonly Texture intro = Engine.LoadTexture("1.png");
-    readonly Texture introHover = Engine.LoadTexture("2.png");
-    readonly Texture end = Engine.LoadTexture("4.png");
-    readonly Texture endHover = Engine.LoadTexture("5.png");
+    readonly Texture intro = Engine.LoadTexture("n1.png");
+    readonly Texture introHover = Engine.LoadTexture("n2.png");
+    readonly Texture end = Engine.LoadTexture("n4.png");
+    readonly Texture endHover = Engine.LoadTexture("n5.png");
     //mouse for starting game
     int mX = (int)Engine.MousePosition.X;
     int mY = (int)Engine.MousePosition.Y;
