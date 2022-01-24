@@ -15,17 +15,16 @@ class Game
     readonly Font font = Engine.LoadFont("OpenSans-Regular.ttf", 20);
     readonly Texture whiteSpace = Engine.LoadTexture("whiteSpace.png");
 
-    readonly Texture prizeSkin = Engine.LoadTexture("eastern_orthodox_cross.png");
-
 
     Player player = new Player();
     float playerVelocity = 0f;
     float maxVelocity = 5f;
     float origVelocity = 0f;
 
-    Enemy enemy1 = new Enemy();
-    Boolean enemy1OnScreen = false;
-    Boolean enemy1MoveLeft = true;
+    List<Enemy> enemies = new List<Enemy>();
+    List<SpaceEnemy> spaceEnemies = new List<SpaceEnemy>();
+    Boolean enemyOnScreen = false;
+
 
     int blockSizeX = 20;
     int blockSizeY = 25;
@@ -51,10 +50,10 @@ class Game
 
     bool generate = false;
 
-    readonly Texture intro = Engine.LoadTexture("1.png");
-    readonly Texture introHover = Engine.LoadTexture("2.png");
-    readonly Texture end = Engine.LoadTexture("4.png");
-    readonly Texture endHover = Engine.LoadTexture("5.png");
+    readonly Texture intro = Engine.LoadTexture("n1.png");
+    readonly Texture introHover = Engine.LoadTexture("n2.png");
+    readonly Texture end = Engine.LoadTexture("n4.png");
+    readonly Texture endHover = Engine.LoadTexture("n5.png");
     //mouse for starting game
     int mX = (int)Engine.MousePosition.X;
     int mY = (int)Engine.MousePosition.Y;
@@ -148,6 +147,10 @@ class Game
 
     public void Update()
     {
+        if (timeLeft == 0)
+        {
+            endGame();
+        }
         if (sandCheck >= player.yPos)
         {
             if (biome == 0)
@@ -197,6 +200,7 @@ class Game
         if (start)
         {
             // checking if intro screen should be displayed
+            //Console.WriteLine("start");
             Engine.DrawTexture(intro, Vector2.Zero);
         }
         if (mX > 95 && mX < 542 && mY > 306 && mY < 350 && start)
@@ -212,7 +216,6 @@ class Game
                 timer.Elapsed += OnTimedEvent;
                 timer.AutoReset = true;
                 timer.Enabled = true;
-                
             }
         }
         if (mX > 0 && mX < 640 && mY > 0 && mY < 480 && endSc)
@@ -221,7 +224,7 @@ class Game
         }
         if (play)
         {
-            
+            //Console.WriteLine("play");
             //Engine.DrawTexture(_background, Vector2.Zero);
             Engine.DrawTexture(player.getTexture(), player.getVectorPos());
 
@@ -235,7 +238,7 @@ class Game
             addLayer();
 
             // check if game is Over
-            checkGameEnd();
+            checkTouchingEnemy();
 
             //Engine.DrawTexture(_sprite, new Vector2(spriteX, spriteY), null, new Vector2(20, 25));
 
@@ -275,7 +278,7 @@ class Game
                     if (player.xPos >= currentBlock.getX() + 20)
                     {
                         canMoveLeft = false;
-                        isInRange = true;
+                        isInRange = false;
                         player.xPos = currentBlock.getX() + 22;
                         i = blocks.Count + 1;
                     }
@@ -283,7 +286,7 @@ class Game
                     if (player.xPos + 13 <= currentBlock.getX())
                     {
                         canMoveRight = false;
-                        isInRange = true;
+                        isInRange = false;
                         player.xPos = currentBlock.getX() - 15;
                         i = blocks.Count + 1;
                     }
@@ -342,10 +345,13 @@ class Game
 
                 player.yPos += 20;
 
-                if (enemy1OnScreen)
+                foreach (Enemy enemy in enemies)
                 {
-                    enemy1.setEnemyY(enemy1.getEnemyY() + 30);
+                    if (enemyOnScreen)
+                    {
+                        enemy.setEnemyY(enemy.getEnemyY() + 30);
 
+                    }
                 }
 
                 scrollValue += 10f;
@@ -359,31 +365,18 @@ class Game
                 spaceCheck += 10f;
             }
 
-            if (enemy1OnScreen)
+            foreach (Enemy enemy in enemies)
             {
-
-                enemy1.drawEnemy();
-                if (!enemy1MoveLeft)
+                if (enemyOnScreen)
                 {
-                    enemy1.setEnemyX(enemy1.getEnemyX() + 1);
-                    if (enemy1.getEnemyX() == enemy1.getInitialX())
-                    {
-                        enemy1MoveLeft = true;
-                    }
-                }
-                else if (enemy1MoveLeft)
-                {
-                    enemy1.setEnemyX(enemy1.getEnemyX() - 1);
-                    if (enemy1.getEnemyX() < enemy1.getInitialX() - 50)
-                    {
-                        enemy1MoveLeft = false;
-                    }
-                }
 
+                    enemy.drawEnemy();
+                    enemy.enemyAct();
+
+                }
             }
-
             playerIsOverlapping();
-
+            ghostBlockBreak();
 
             //displaying the number of points
             Engine.DrawTexture(whiteSpace, new Vector2(Resolution.X - 50, -5));
@@ -391,8 +384,9 @@ class Game
             Engine.DrawString(totalPoints.ToString(), new Vector2(Resolution.X - 50, 0), Color.Black, font);
 
             // displaying current time left
-            Engine.DrawTexture(whiteSpace, new Vector2(-170, -5));
-            Engine.DrawString(timeLeft.ToString(), new Vector2(0, 0), Color.Black, font);
+            Engine.DrawTexture(whiteSpace, new Vector2(-120, -5));
+            Engine.DrawString("Time: " +timeLeft.ToString(), new Vector2(0, 0), Color.Black, font);
+
 
             //trinket code
 
@@ -456,6 +450,7 @@ class Game
                 }
                 else if (highScore < totalPoints)
                 {
+                    //Console.WriteLine(highScore);
                     highScore = totalPoints;
                     File.WriteAllText("HighScore.txt", String.Empty);
                     File.WriteAllTextAsync("HighScore.txt", totalPoints.ToString());
@@ -471,8 +466,42 @@ class Game
         {
             Engine.DrawTexture(endHover, Vector2.Zero);
             Engine.DrawString("High Score: " + highScore.ToString(), Vector2.Zero, Color.White, font);
+            if(Engine.GetMouseButtonDown(MouseButton.Left))
+            {
+                //Console.WriteLine("end screen click");
+                gameOver = false;
+                endSc = false;
+                play = false;
+                start = true;
+                highScoreUpdate = false;
 
+                blocks.Clear();
+                trinketX.Clear();
+                trinketY.Clear();
+                enemies.Clear();
 
+                highScore = Int32.Parse(File.ReadAllText("HighScore.txt"));
+
+                addInitialLayers();
+                player.yPos = 400;
+                player.xPos = 240;
+
+                timer.Dispose();
+                timeLeft = 60;
+                totalPoints = 0;
+
+                biome = 0;
+                sandCheck = -960;
+                iceCheck = -1300;
+                spaceCheck = -2800;
+                underSandY = -960;
+                iceSpaceY = -2880;
+                scrollValue = 0;
+                spaceBack1Y = -3840;
+                spaceBack2Y = -4320;
+
+                Engine.PlayMusic(backMusic);
+            }
         }
 
     }
@@ -513,28 +542,57 @@ class Game
             for (int i = 0; i < bound; i += 20)
             {
 
-                blocks.Add(new Block(i, 0, biome + 1));
+                blocks.Add(new Block(i, 0, 1));
             }
 
             for (int i = bound + 60; i <= Resolution.X; i += 20)
             {
-                blocks.Add(new Block(i, 0, biome + 1));
+                blocks.Add(new Block(i, 0, 1));
             }
 
             totalPoints++;
 
-            if (!enemy1OnScreen && rand.Next(1, 5) == 3)
+            // Spawn Enemies!
+            if (rand.Next(1, 5) == 3)
             {
-                enemy1 = new Enemy();
-                enemy1MoveLeft = true;
-                enemy1OnScreen = true;
+                enemies.Add(new DirtEnemy());
+                enemyOnScreen = true;
             }
-            if (enemy1.getEnemyY() > 640)
+            if(biome >= 1 && rand.Next(1,3) == 1)
             {
-                enemy1OnScreen = false;
+                enemies.Add(new SandEnemy());
+                enemyOnScreen = true;
             }
-
-
+            if (biome >= 2 && rand.Next(1, 6) == 1)
+            {
+                enemies.Add(new IceEnemy(player));
+                enemyOnScreen = true;
+            }
+            if (biome >= 3 && rand.Next(1, 10) == 1)
+            {
+                SpaceEnemy ghostEnemy= new SpaceEnemy(player);
+                enemies.Add(ghostEnemy);
+                spaceEnemies.Add(ghostEnemy);
+                enemyOnScreen = true;
+                
+            }
+            List<Enemy> offScreen = new List<Enemy>();
+            foreach (Enemy enemy in enemies)
+            {
+                if (enemy.getEnemyY() > 480)
+                {
+                    enemyOnScreen = false;
+                    offScreen.Add(enemy);
+                } else if(enemy.getEnemyY() < 480)
+                {
+                    enemyOnScreen = true;
+                    break;
+                }
+            }
+            foreach(Enemy enemy in offScreen)
+            {
+                enemies.Remove(enemy);
+            }
 
             if (rand.Next(1, 4) == 1)
             {
@@ -585,22 +643,47 @@ class Game
         return false;
     }
 
-    public bool checkGameEnd()
+    public void ghostBlockBreak()
+    {
+        foreach(SpaceEnemy enemy in spaceEnemies)
+        {
+            for (int i = 0; i < blocks.Count; i++)
+            {
+                Bounds2 floorBounds = new Bounds2(new Vector2(blocks[i].getX(), blocks[i].getY()), new Vector2(20, 20));
+                Bounds2 enemyBounds = new Bounds2(new Vector2(enemy.getEnemyX(), enemy.getEnemyY())
+                , new Vector2(29, 29));
+                if (enemyBounds.Overlaps(floorBounds))
+                {
+                    blocks.RemoveAt(i);
+                    
+                }
+            }
+        }
+    }
+    public bool checkTouchingEnemy()
     {
         Bounds2 spritePosition = new Bounds2(new Vector2(player.xPos, player.yPos), new Vector2(13, 30));
-        Bounds2 enemyBounds = new Bounds2(new Vector2(enemy1.getEnemyX(), enemy1.getEnemyY())
-            , new Vector2(29, 29));
-        if (spritePosition.Overlaps(enemyBounds) || player.yPos > 480 || timeLeft == 0)
+        foreach (Enemy enemy in enemies)
         {
-            Engine.StopMusic();
-            Engine.PlaySound(death);
-            gameOver = true;
-            play = false;
-            endSc = true;
-            
-            return true;
+            Bounds2 enemyBounds = new Bounds2(new Vector2(enemy.getEnemyX(), enemy.getEnemyY())
+                , new Vector2(29, 29));
+            if (spritePosition.Overlaps(enemyBounds) || player.yPos > 480)
+            {
+                endGame();
+
+                return true;
+            }
         }
         return false;
+    }
+
+    public void endGame()
+    {
+        Engine.StopMusic();
+        Engine.PlaySound(death);
+        gameOver = true;
+        play = false;
+        endSc = true;
     }
     public bool GameOverByGoingOutsideOfBorders()
     {
