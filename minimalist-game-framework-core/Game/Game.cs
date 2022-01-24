@@ -23,9 +23,10 @@ class Game
     float maxVelocity = 5f;
     float origVelocity = 0f;
 
-    Enemy enemy1 = new Enemy();
-    Boolean enemy1OnScreen = false;
-    Boolean enemy1MoveLeft = true;
+    List<Enemy> enemies = new List<Enemy>();
+    List<SpaceEnemy> spaceEnemies = new List<SpaceEnemy>();
+    Boolean enemyOnScreen = false;
+
 
     int blockSizeX = 20;
     int blockSizeY = 25;
@@ -235,7 +236,7 @@ class Game
             addLayer();
 
             // check if game is Over
-            checkGameEnd();
+            checkTouchingEnemy();
 
             //Engine.DrawTexture(_sprite, new Vector2(spriteX, spriteY), null, new Vector2(20, 25));
 
@@ -342,10 +343,13 @@ class Game
 
                 player.yPos += 20;
 
-                if (enemy1OnScreen)
+                foreach (Enemy enemy in enemies)
                 {
-                    enemy1.setEnemyY(enemy1.getEnemyY() + 30);
+                    if (enemyOnScreen)
+                    {
+                        enemy.setEnemyY(enemy.getEnemyY() + 30);
 
+                    }
                 }
 
                 scrollValue += 10f;
@@ -359,31 +363,18 @@ class Game
                 spaceCheck += 10f;
             }
 
-            if (enemy1OnScreen)
+            foreach (Enemy enemy in enemies)
             {
-
-                enemy1.drawEnemy();
-                if (!enemy1MoveLeft)
+                if (enemyOnScreen)
                 {
-                    enemy1.setEnemyX(enemy1.getEnemyX() + 1);
-                    if (enemy1.getEnemyX() == enemy1.getInitialX())
-                    {
-                        enemy1MoveLeft = true;
-                    }
-                }
-                else if (enemy1MoveLeft)
-                {
-                    enemy1.setEnemyX(enemy1.getEnemyX() - 1);
-                    if (enemy1.getEnemyX() < enemy1.getInitialX() - 50)
-                    {
-                        enemy1MoveLeft = false;
-                    }
-                }
 
+                    enemy.drawEnemy();
+                    enemy.enemyAct();
+
+                }
             }
-
             playerIsOverlapping();
-
+            ghostBlockBreak();
 
             //displaying the number of points
             Engine.DrawTexture(whiteSpace, new Vector2(Resolution.X - 50, -5));
@@ -485,7 +476,7 @@ class Game
                 blocks.Clear();
                 trinketX.Clear();
                 trinketY.Clear();
-                enemy1 = new Enemy();
+                enemies.Clear();
 
                 highScore = Int32.Parse(File.ReadAllText("HighScore.txt"));
 
@@ -559,18 +550,47 @@ class Game
 
             totalPoints++;
 
-            if (!enemy1OnScreen && rand.Next(1, 5) == 3)
+            // Spawn Enemies!
+            if (rand.Next(1, 5) == 3)
             {
-                enemy1 = new Enemy();
-                enemy1MoveLeft = true;
-                enemy1OnScreen = true;
+                enemies.Add(new DirtEnemy());
+                enemyOnScreen = true;
             }
-            if (enemy1.getEnemyY() > 640)
+            if(biome >= 1 && rand.Next(1,3) == 1)
             {
-                enemy1OnScreen = false;
+                enemies.Add(new SandEnemy());
+                enemyOnScreen = true;
             }
-
-
+            if (biome >= 2 && rand.Next(1, 6) == 1)
+            {
+                enemies.Add(new IceEnemy(player));
+                enemyOnScreen = true;
+            }
+            if (biome >= 3 && rand.Next(1, 10) == 1)
+            {
+                SpaceEnemy ghostEnemy= new SpaceEnemy(player);
+                enemies.Add(ghostEnemy);
+                spaceEnemies.Add(ghostEnemy);
+                enemyOnScreen = true;
+                
+            }
+            List<Enemy> offScreen = new List<Enemy>();
+            foreach (Enemy enemy in enemies)
+            {
+                if (enemy.getEnemyY() > 480)
+                {
+                    enemyOnScreen = false;
+                    offScreen.Add(enemy);
+                } else if(enemy.getEnemyY() < 480)
+                {
+                    enemyOnScreen = true;
+                    break;
+                }
+            }
+            foreach(Enemy enemy in offScreen)
+            {
+                enemies.Remove(enemy);
+            }
 
             if (rand.Next(1, 4) == 1)
             {
@@ -621,20 +641,40 @@ class Game
         return false;
     }
 
-    public bool checkGameEnd()
+    public void ghostBlockBreak()
+    {
+        foreach(SpaceEnemy enemy in spaceEnemies)
+        {
+            for (int i = 0; i < blocks.Count; i++)
+            {
+                Bounds2 floorBounds = new Bounds2(new Vector2(blocks[i].getX(), blocks[i].getY()), new Vector2(20, 20));
+                Bounds2 enemyBounds = new Bounds2(new Vector2(enemy.getEnemyX(), enemy.getEnemyY())
+                , new Vector2(29, 29));
+                if (enemyBounds.Overlaps(floorBounds))
+                {
+                    blocks.RemoveAt(i);
+                    
+                }
+            }
+        }
+    }
+    public bool checkTouchingEnemy()
     {
         Bounds2 spritePosition = new Bounds2(new Vector2(player.xPos, player.yPos), new Vector2(13, 30));
-        Bounds2 enemyBounds = new Bounds2(new Vector2(enemy1.getEnemyX(), enemy1.getEnemyY())
-            , new Vector2(29, 29));
-        if (spritePosition.Overlaps(enemyBounds) || player.yPos > 480 || timeLeft == 0)
+        foreach (Enemy enemy in enemies)
         {
-            Engine.StopMusic();
-            Engine.PlaySound(death);
-            gameOver = true;
-            play = false;
-            endSc = true;
-            
-            return true;
+            Bounds2 enemyBounds = new Bounds2(new Vector2(enemy.getEnemyX(), enemy.getEnemyY())
+                , new Vector2(29, 29));
+            if (spritePosition.Overlaps(enemyBounds) || player.yPos > 480 || timeLeft == 0)
+            {
+                Engine.StopMusic();
+                Engine.PlaySound(death);
+                gameOver = true;
+                play = false;
+                endSc = true;
+
+                return true;
+            }
         }
         return false;
     }
