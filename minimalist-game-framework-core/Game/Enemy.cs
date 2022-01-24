@@ -4,10 +4,10 @@ using System.Text;
 
 class Enemy
 {
-    readonly ResizableTexture enemy1= Engine.LoadResizableTexture("Underground Enemy.png", 0, 0, 0, 0);
-    int enemyX;
-    int initialX;
-    int enemyY;
+    public ResizableTexture enemyTexture;
+    public int enemyX;
+    public int initialX;
+    public int enemyY;
     public Enemy()
     {
         Random rand = new Random();
@@ -43,10 +43,14 @@ class Enemy
     {
         return initialX;
     }
-    public void drawEnemy()
+    
+    public virtual void drawEnemy()
     {
-        Engine.DrawResizableTexture(enemy1, new Bounds2(enemyX, enemyY, 30, 30));
+        Engine.DrawResizableTexture(enemyTexture, new Bounds2(enemyX, enemyY, 30, 30));
     }
+    public virtual void enemyAct()
+    {
 
+    }
     
 }
