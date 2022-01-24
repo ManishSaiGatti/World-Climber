@@ -15,8 +15,6 @@ class Game
     readonly Font font = Engine.LoadFont("OpenSans-Regular.ttf", 20);
     readonly Texture whiteSpace = Engine.LoadTexture("whiteSpace.png");
 
-    readonly Texture prizeSkin = Engine.LoadTexture("eastern_orthodox_cross.png");
-
 
     Player player = new Player();
     float playerVelocity = 0f;
