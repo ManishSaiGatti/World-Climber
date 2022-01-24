@@ -149,6 +149,10 @@ class Game
 
     public void Update()
     {
+        if (timeLeft == 0)
+        {
+            endGame();
+        }
         if (sandCheck >= player.yPos)
         {
             if (biome == 0)
@@ -665,18 +669,23 @@ class Game
         {
             Bounds2 enemyBounds = new Bounds2(new Vector2(enemy.getEnemyX(), enemy.getEnemyY())
                 , new Vector2(29, 29));
-            if (spritePosition.Overlaps(enemyBounds) || player.yPos > 480 || timeLeft == 0)
+            if (spritePosition.Overlaps(enemyBounds) || player.yPos > 480)
             {
-                Engine.StopMusic();
-                Engine.PlaySound(death);
-                gameOver = true;
-                play = false;
-                endSc = true;
+                endGame();
 
                 return true;
             }
         }
         return false;
+    }
+
+    public void endGame()
+    {
+        Engine.StopMusic();
+        Engine.PlaySound(death);
+        gameOver = true;
+        play = false;
+        endSc = true;
     }
     public bool GameOverByGoingOutsideOfBorders()
     {
