@@ -9,7 +9,7 @@ class SandEnemy : Enemy
     public int yDifference; 
     public SandEnemy(){
         moveDirection = "right";
-        enemyTexture = Engine.LoadResizableTexture("12.svg", 0, 0, 0, 0);
+        enemyTexture = Engine.LoadResizableTexture("12.png", 0, 0, 0, 0);
         yDifference = 0;
     }
 
