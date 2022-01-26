@@ -9,9 +9,7 @@ class Game
     public static readonly Vector2 Resolution = new Vector2(640, 480);
 
     readonly Texture _background = Engine.LoadTexture("Background.jpg");
-
     readonly Texture _sprite = Engine.LoadTexture("player.png");
-
     readonly Font font = Engine.LoadFont("OpenSans-Regular.ttf", 20);
     readonly Texture whiteSpace = Engine.LoadTexture("whiteSpace.png");
 
